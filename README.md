@@ -32,11 +32,13 @@ node gen.js
 2. 运行 `node gen.js` 重新生成 `index.html`
 3. 仅当项目列表有变化时才提交并推送，GitHub Pages 随即自动重建
 
-**可选：收录私有仓库** —— 默认工作流只用公开 API（不含私有仓库）。若希望把私有仓库里设置的 Website 也聚合进来，请在仓库 `Settings → Secrets and variables → Actions` 添加一个仓库秘密：
+**收录私有仓库（推荐）** —— 你的仓库里有一大批**私有仓库**也设置了 Website（演示网址），默认只用公开 API 的工作流看不到它们，且为避免自动覆盖掉已手动收录的私有仓库演示，**未配置令牌时工作流不会推送**。
+
+若要启用完整自动更新（含私有仓库），请在仓库 `Settings → Secrets and variables → Actions` 添加一个仓库秘密：
 
 - Name：`GH_TOKEN`
-- Value：一个具备 `repo` 权限的个人访问令牌（PAT）
+- Value：一个具备 `repo` 权限的个人访问令牌（PAT，https://github.com/settings/tokens）
 
-添加后，工作流会自动改用认证接口并分页拉取全部仓库。
+添加后，工作流会自动改用认证接口并分页拉取全部仓库（公开 + 私有），之后每次定时/手动触发都会自动更新页面。
 
 访问地址：https://weepwood.github.io/projects/

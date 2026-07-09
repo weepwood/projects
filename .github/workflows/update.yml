@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -20,10 +23,10 @@ jobs:
           node-version: "20"
 
       # 拉取仓库列表（分页，确保超过 100 个仓库时也不会遗漏）
-      # 若配置了 secrets.GH_TOKEN（含 repo 权限的 PAT），可同时收录私有仓库
+      # 配置了 secrets.GH_TOKEN（含 repo 权限的 PAT）时可同时收录私有仓库
       - name: Fetch repos
         run: |
-          if [ -n "${{ secrets.GH_TOKEN }}" ]; then
+          if [ -n "$GH_TOKEN" ]; then
             gh api --paginate "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
           else
             python3 - <<'PY'
@@ -44,14 +47,19 @@ jobs:
           print("fetched", len(all_repos), "public repos")
           PY
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Regenerate page
         run: node gen.js
 
+      # 没有 GH_TOKEN 时只做公开仓库（会漏掉私有仓库的演示网址），
+      # 为避免覆盖已手动收录的私有仓库演示，这里不推送，只提示。
       - name: Commit & push if changed
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_TOKEN 未配置：为避免丢失私有仓库的演示网址，本次不推送。"
+            echo "如需完整自动更新（含私有仓库），请在仓库 Settings → Secrets 中添加 GH_TOKEN（具备 repo 权限的个人访问令牌）。"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html projects_data.json
