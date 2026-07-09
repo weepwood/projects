@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>weepwood · 项目演示聚合</title>
+<style>
+  :root {
+    --bg: #f6f8fa;
+    --card: #ffffff;
+    --border: #d8dee4;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --shadow: 0 1px 3px rgba(27,31,36,.08), 0 1px 2px rgba(27,31,36,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+  header.hero {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+  }
+  .avatar { width: 56px; height: 56px; border-radius: 50%; background: #0969da22; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: var(--accent); }
+  .hero h1 { margin: 0; font-size: 26px; }
+  .hero p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .hero .meta { margin-left: auto; text-align: right; color: var(--muted); font-size: 13px; }
+  .hero .meta a { color: var(--accent); text-decoration: none; }
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .search { flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card); }
+  .search:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--muted); padding: 6px 12px; border-radius: 999px; font-size: 13px; user-select: none; }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; transition: transform .12s ease, box-shadow .12s ease; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(27,31,36,.12); }
+  .card h3 { margin: 0 0 6px; font-size: 16px; word-break: break-all; }
+  .card h3 a { color: var(--text); text-decoration: none; }
+  .card h3 a:hover { color: var(--accent); }
+  .desc { color: var(--muted); font-size: 13.5px; flex: 1; margin: 0 0 14px; }
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .plat { background: #eaeef2; color: #424a53; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; }
+  .actions { display: flex; gap: 8px; }
+  .btn { flex: 1; text-align: center; padding: 9px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); color: var(--text); }
+  .btn.demo { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.demo:hover { background: #0860ca; }
+  .btn.code { background: var(--card); }
+  .btn.code:hover { background: #f3f4f6; border-color: #c2cad2; }
+  footer { margin-top: 40px; text-align: center; color: var(--muted); font-size: 12.5px; }
+  .empty { text-align: center; color: var(--muted); padding: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="avatar">W</div>
+    <div>
+      <h1>weepwood · 项目演示聚合</h1>
+      <p>从 GitHub 仓库详情的 Website 字段提取，汇集全部在线演示网址</p>
+    </div>
+    <div class="meta">
+      <div><strong id="count">0</strong> 个演示项目</div>
+      <div>更新于 2026-07-09 · <a href="https://github.com/weepwood" target="_blank" rel="noopener">@weepwood</a></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input id="search" class="search" type="text" placeholder="搜索项目名、描述或语言…" />
+    <div class="chips" id="platformChips"></div>
+    <div class="chips" id="langChips"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">没有匹配的项目</div>
+
+  <footer>
+    数据来源于 weepwood 的 GitHub 公开仓库 · 本页为静态生成，部署于 GitHub Pages
+  </footer>
+</div>
+
+<script>
+const REPOS = [
+  {
+    "name": "ui-elements-showcase",
+    "fullName": "weepwood/ui-elements-showcase",
+    "description": "仿 uiverse.io 的前端 UI 元素展示库（Vue 3 + Element Plus）：实时预览、搜索、分类、收藏、在线编辑、下载整页、亮暗主题。",
+    "homepage": "https://ui-elements-showcase.netlify.app",
+    "repo": "https://github.com/weepwood/ui-elements-showcase",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ui-elements-showcase.netlify.app"
+  },
+  {
+    "name": "mingchao-story",
+    "fullName": "weepwood/mingchao-story",
+    "description": "鸣潮 · 潮汐任务剧情分析网页（整合 1.0-3.1 主线，纯前端可交互）",
+    "homepage": "https://mingchao-story-analysis.netlify.app",
+    "repo": "https://github.com/weepwood/mingchao-story",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "mingchao-story-analysis.netlify.app"
+  },
+  {
+    "name": "board-games",
+    "fullName": "weepwood/board-games",
+    "description": "网页围棋/五子棋/象棋人机对战（纯前端）",
+    "homepage": "https://board-games-154.netlify.app",
+    "repo": "https://github.com/weepwood/board-games",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "board-games-154.netlify.app"
+  },
+  {
+    "name": "makemepulse-2019-mirror",
+    "fullName": "weepwood/makemepulse-2019-mirror",
+    "description": "1:1 static mirror of makemepulse 2019 \"Nomadic Tribe\" interactive WebGL site",
+    "homepage": "https://makemepulse-2019-mirror.netlify.app",
+    "repo": "https://github.com/weepwood/makemepulse-2019-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "makemepulse-2019-mirror.netlify.app"
+  },
+  {
+    "name": "algo-note-visualization",
+    "fullName": "weepwood/algo-note-visualization",
+    "description": "算法通关手册题解可视化 · AlgoNote 1500+ 道 LeetCode 题解的可视化检索面板（Markdown + KaTeX 公式渲染，完全离线）",
+    "homepage": "https://algo-visualizer-15959.netlify.app",
+    "repo": "https://github.com/weepwood/algo-note-visualization",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "algo-visualizer-15959.netlify.app"
+  },
+  {
+    "name": "algo-visualizer",
+    "fullName": "weepwood/algo-visualizer",
+    "description": "数据结构与算法交互式可视化（单文件静态站点）",
+    "homepage": "https://algo-visualizer-15959.netlify.app",
+    "repo": "https://github.com/weepwood/algo-visualizer",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "algo-visualizer-15959.netlify.app"
+  },
+  {
+    "name": "opencode-data-mirror",
+    "fullName": "weepwood/opencode-data-mirror",
+    "description": "1:1 mirror of opencode.ai/zh/data (static snapshot)",
+    "homepage": "https://opencode-data-mirror.netlify.app",
+    "repo": "https://github.com/weepwood/opencode-data-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "opencode-data-mirror.netlify.app"
+  },
+  {
+    "name": "ccunpacked-replica",
+    "fullName": "weepwood/ccunpacked-replica",
+    "description": "1:1 static replica of Claude Code Unpacked (ccunpacked.dev)",
+    "homepage": "https://ccunpacked-replica.netlify.app",
+    "repo": "https://github.com/weepwood/ccunpacked-replica",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ccunpacked-replica.netlify.app"
+  },
+  {
+    "name": "design-style-library",
+    "fullName": "weepwood/design-style-library",
+    "description": "Design Style Library · 设计风格馆藏 — 一个集中保存与浏览不同网页设计风格的静态项目",
+    "homepage": "https://design-style-library.netlify.app",
+    "repo": "https://github.com/weepwood/design-style-library",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "design-style-library.netlify.app"
+  },
+  {
+    "name": "ruanyf-weekly-search",
+    "fullName": "weepwood/ruanyf-weekly-search",
+    "description": "阮一峰科技爱好者周刊可搜索网页：402期文章跨板块检索 + 1866条资源按类型分类汇总",
+    "homepage": "https://ruanyf-weekly-search.netlify.app",
+    "repo": "https://github.com/weepwood/ruanyf-weekly-search",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ruanyf-weekly-search.netlify.app"
+  },
+  {
+    "name": "logiclab",
+    "fullName": "weepwood/logiclab",
+    "description": "类 Logisim 的数字逻辑电路仿真器，用于学习计算机底层硬件原理",
+    "homepage": "https://logiclab-620.netlify.app",
+    "repo": "https://github.com/weepwood/logiclab",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "logiclab-620.netlify.app"
+  },
+  {
+    "name": "math-viz",
+    "fullName": "weepwood/math-viz",
+    "description": "高等数学常见函数图谱与可视化学习程序",
+    "homepage": "https://math-viz-446.netlify.app",
+    "repo": "https://github.com/weepwood/math-viz",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "math-viz-446.netlify.app"
+  },
+  {
+    "name": "v8-engine-visualization",
+    "fullName": "weepwood/v8-engine-visualization",
+    "description": "V8 引擎运行原理可视化 · 交互式教学网页（纯静态单文件）",
+    "homepage": "https://v8-engine-visualization.netlify.app",
+    "repo": "https://github.com/weepwood/v8-engine-visualization",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "v8-engine-visualization.netlify.app"
+  },
+  {
+    "name": "cellular-automata",
+    "fullName": "weepwood/cellular-automata",
+    "description": "基于元胞自动机的工程化平台：生命游戏、兰顿蚂蚁、插件化规则引擎与模版库",
+    "homepage": "https://cellular-automata-348.netlify.app",
+    "repo": "https://github.com/weepwood/cellular-automata",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "cellular-automata-348.netlify.app"
+  },
+  {
+    "name": "opencode-data-zh",
+    "fullName": "weepwood/opencode-data-zh",
+    "description": "一比一还原 opencode.ai/zh/data 的 AI 模型使用排名数据页（静态复制品）",
+    "homepage": "https://opencode-data-zh.netlify.app",
+    "repo": "https://github.com/weepwood/opencode-data-zh",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "opencode-data-zh.netlify.app"
+  },
+  {
+    "name": "nexora-landing",
+    "fullName": "weepwood/nexora-landing",
+    "description": "Nexora 智能自动化产品官网，Vite + React + Tailwind 构建的静态落地页",
+    "homepage": "https://weepwood.github.io/nexora-landing/",
+    "repo": "https://github.com/weepwood/nexora-landing",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/nexora-landing/"
+  },
+  {
+    "name": "img-project",
+    "fullName": "weepwood/img-project",
+    "description": "GitHub Pages 静态图片画廊，支持缩略图生成与相册分类",
+    "homepage": "https://weepwood.github.io/img-project/",
+    "repo": "https://github.com/weepwood/img-project",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/img-project/"
+  },
+  {
+    "name": "weepwood-project-demo",
+    "fullName": "weepwood/weepwood-project-demo",
+    "description": "基于 Vitecamp 模板的个人项目演示页面（Vue 3 + Element Plus）",
+    "homepage": "https://demo.halo.wang/",
+    "repo": "https://github.com/weepwood/weepwood-project-demo",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "自定义",
+    "host": "demo.halo.wang"
+  },
+  {
+    "name": "spine",
+    "fullName": "weepwood/spine",
+    "description": "Spine 角色展示平台，支持角色浏览、搜索筛选和响应式设计",
+    "homepage": "https://spine-ten.vercel.app",
+    "repo": "https://github.com/weepwood/spine",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Vercel",
+    "host": "spine-ten.vercel.app"
+  },
+  {
+    "name": "wmath",
+    "fullName": "weepwood/wmath",
+    "description": "基于 Obsidian 的高等数学知识库，构建微积分、线代、概率论互联知识图谱",
+    "homepage": "https://weepwood.github.io/wmath/",
+    "repo": "https://github.com/weepwood/wmath",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/wmath/"
+  },
+  {
+    "name": "blog-system",
+    "fullName": "weepwood/blog-system",
+    "description": "全栈博客系统（React + Express + Supabase），支持 Markdown 编辑与评论",
+    "homepage": "https://blog-system-frontend-rho.vercel.app",
+    "repo": "https://github.com/weepwood/blog-system",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Vercel",
+    "host": "blog-system-frontend-rho.vercel.app"
+  },
+  {
+    "name": "ai-ppt-1",
+    "fullName": "weepwood/ai-ppt-1",
+    "description": "跨学科思维工具箱 Web 演示文稿，展示六大思维模型的 WebGL 动画",
+    "homepage": "https://effervescent-parfait-77dc75.netlify.app/",
+    "repo": "https://github.com/weepwood/ai-ppt-1",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "effervescent-parfait-77dc75.netlify.app"
+  },
+  {
+    "name": "s2u",
+    "fullName": "weepwood/s2u",
+    "description": "将 URL Scheme 或任意网址转换为 HTTP 跳转链接的在线工具",
+    "homepage": "https://s2u2.netlify.app",
+    "repo": "https://github.com/weepwood/s2u",
+    "language": "Vue",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "s2u2.netlify.app"
+  },
+  {
+    "name": "claude-code-vs-desktop",
+    "fullName": "weepwood/claude-code-vs-desktop",
+    "description": "Claude Code 命令行 vs 桌面端 功能对比与选型指南",
+    "homepage": "https://claude-code-vs-desktop.netlify.app/",
+    "repo": "https://github.com/weepwood/claude-code-vs-desktop",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "claude-code-vs-desktop.netlify.app"
+  },
+  {
+    "name": "claude-code-guide",
+    "fullName": "weepwood/claude-code-guide",
+    "description": "Claude Code 使用指南 —— 终端原生 AI 编程助手的完整功能说明和最佳实践",
+    "homepage": "https://claude-code-guide-135.netlify.app",
+    "repo": "https://github.com/weepwood/claude-code-guide",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "claude-code-guide-135.netlify.app"
+  },
+  {
+    "name": "Arknights-FlowingPoints",
+    "fullName": "weepwood/Arknights-FlowingPoints",
+    "description": "明日方舟粒子特效模拟器 - 交互式粒子系统",
+    "homepage": "https://arkpoints-120.netlify.app/",
+    "repo": "https://github.com/weepwood/Arknights-FlowingPoints",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "arkpoints-120.netlify.app"
+  }
+];
+
+const langColors = {"JavaScript":"#f1e05a","TypeScript":"#3178c6","HTML":"#e34c26","CSS":"#563d7c","Vue":"#41b883","Python":"#3572A5","Java":"#b07219","Go":"#00ADD8","C":"#555555","C++":"#f34b7d","C#":"#178600","GDScript":"#355570","Shell":"#89e051","Rust":"#dea584","null":"#8b949e"};
+const grid = document.getElementById("grid");
+const empty = document.getElementById("empty");
+const searchEl = document.getElementById("search");
+const platformChips = document.getElementById("platformChips");
+const langChips = document.getElementById("langChips");
+
+let activePlatform = "全部";
+let activeLang = "全部";
+
+document.getElementById("count").textContent = REPOS.length;
+
+const platforms = ["全部", ...Array.from(new Set(REPOS.map(r => r.platform)))];
+const langs = ["全部", ...Array.from(new Set(REPOS.map(r => r.language || "其他").filter(Boolean)))];
+
+function renderChips(container, values, active) {
+  container.innerHTML = "";
+  values.forEach(v => {
+    const c = document.createElement("span");
+    c.className = "chip" + (v === active ? " active" : "");
+    c.textContent = v;
+    c.addEventListener("click", () => {
+      if (container === platformChips) activePlatform = v;
+      else activeLang = v;
+      renderAll();
+    });
+    container.appendChild(c);
+  });
+}
+
+function renderAll() {
+  renderChips(platformChips, platforms, activePlatform);
+  renderChips(langChips, langs, activeLang);
+  renderGrid();
+}
+
+function renderGrid() {
+  const q = searchEl.value.trim().toLowerCase();
+  const list = REPOS.filter(r => {
+    const matchP = activePlatform === "全部" || r.platform === activePlatform;
+    const matchL = activeLang === "全部" || (r.language || "其他") === activeLang;
+    const matchQ = !q || r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || (r.language || "").toLowerCase().includes(q);
+    return matchP && matchL && matchQ;
+  });
+  grid.innerHTML = "";
+  empty.style.display = list.length ? "none" : "block";
+  list.forEach(r => {
+    const color = langColors[r.language] || langColors.null;
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3><a href="${r.repo}" target="_blank" rel="noopener">${r.name}</a></h3>
+      <p class="desc">${r.description}</p>
+      <div class="tags">
+        <span class="tag"><span class="dot" style="background:${color}"></span>${r.language || "其他"}</span>
+        <span class="plat">${r.platform}</span>
+        <span class="tag">★ ${r.stars}</span>
+      </div>
+      <div class="actions">
+        <a class="btn demo" href="${r.homepage}" target="_blank" rel="noopener">在线演示</a>
+        <a class="btn code" href="${r.repo}" target="_blank" rel="noopener">源码</a>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+searchEl.addEventListener("input", renderGrid);
+renderAll();
+</script>
+</body>
+</html>
