@@ -1,0 +1,63 @@
+name: Update project list
+
+# 自动把 weepwood 仓库中设置了 Website(homepage) 的项目聚合进 index.html
+on:
+  schedule:
+    - cron: "23 */6 * * *"   # 每 6 小时检查一次；有新项目设了 Website 就会被收进页面
+  workflow_dispatch: {}      # 也可在 Actions 页面手动 "Run workflow" 立即更新
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 拉取仓库列表（分页，确保超过 100 个仓库时也不会遗漏）
+      # 若配置了 secrets.GH_TOKEN（含 repo 权限的 PAT），可同时收录私有仓库
+      - name: Fetch repos
+        run: |
+          if [ -n "${{ secrets.GH_TOKEN }}" ]; then
+            gh api --paginate "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
+          else
+            python3 - <<'PY'
+          import json, urllib.request
+          url = "https://api.github.com/users/weepwood/repos?per_page=100&sort=updated"
+          all_repos = []
+          while url:
+              req = urllib.request.Request(url, headers={"User-Agent": "github-actions", "Accept": "application/vnd.github+json"})
+              with urllib.request.urlopen(req) as r:
+                  all_repos.extend(json.loads(r.read().decode()))
+                  link = r.headers.get("Link", "")
+                  url = None
+                  for part in link.split(","):
+                      if 'rel="next"' in part:
+                          url = part[part.index("<") + 1:part.index(">")]
+          with open("repos_raw.json", "w") as f:
+              json.dump(all_repos, f)
+          print("fetched", len(all_repos), "public repos")
+          PY
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Regenerate page
+        run: node gen.js
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html projects_data.json
+          if git diff --cached --quiet; then
+            echo "No changes to project list."
+          else
+            git commit -m "chore: auto-update project list"
+            git push
+          fi

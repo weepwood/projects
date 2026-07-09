@@ -60,7 +60,11 @@ const items = repos
   .sort((a, b) => b.updated.localeCompare(a.updated));
 
 const data = JSON.stringify(items, null, 2);
-const genDate = new Date().toISOString().slice(0, 10);
+// "updated" reflects the most recently updated project, so an unchanged
+// dataset produces byte-identical HTML and the CI workflow won't needless commit.
+const genDate = items.length
+  ? items.reduce((m, r) => (r.updated > m ? r.updated : m), "")
+  : new Date().toISOString().slice(0, 10);
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN">

@@ -2,9 +2,10 @@
 
 从 GitHub 仓库详情的 **Website（homepage）** 字段提取，汇集我全部带在线演示网址的项目。
 
-- 数据源：`weepwood` 的公开仓库（仅收录设置了 Website 的项目）
-- 共 **26** 个演示项目，部署平台覆盖 Netlify / Vercel / GitHub Pages / 自定义域名
+- 数据源：`weepwood` 的全部仓库（**分页拉取**，超过 100 个仓库也不会遗漏），仅收录设置了 Website 的项目
+- 当前共 **59** 个演示项目（数量随仓库变化自动更新），部署平台覆盖 Netlify / Vercel / GitHub Pages / 自定义域名
 - 支持按关键词搜索、按部署平台与语言筛选
+- 自动更新：`.github/workflows/update.yml` 每 6 小时（及手动触发）重新拉取并发布
 
 ## 页面功能
 
@@ -14,13 +15,28 @@
 
 ## 本地重新生成
 
-数据由 `gen.js` 从 GitHub API 拉取并生成 `index.html`：
+数据由 `gen.js` 从 GitHub API 拉取并生成 `index.html`（注意要分页，否则超过 100 个仓库会遗漏）：
 
 ```bash
-gh api -X GET "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
+gh api --paginate "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
 node gen.js
 ```
 
 > 生成的是纯静态页面（数据内联），无需任何后端，可直接托管在 GitHub Pages。
+
+## 自动更新（GitHub Actions）
+
+`.github/workflows/update.yml` 在定时（每 6 小时）或手动触发时：
+
+1. 重新拉取仓库列表（带分页；若仓库设置了 `secrets.GH_TOKEN` 则同时收录私有仓库）
+2. 运行 `node gen.js` 重新生成 `index.html`
+3. 仅当项目列表有变化时才提交并推送，GitHub Pages 随即自动重建
+
+**可选：收录私有仓库** —— 默认工作流只用公开 API（不含私有仓库）。若希望把私有仓库里设置的 Website 也聚合进来，请在仓库 `Settings → Secrets and variables → Actions` 添加一个仓库秘密：
+
+- Name：`GH_TOKEN`
+- Value：一个具备 `repo` 权限的个人访问令牌（PAT）
+
+添加后，工作流会自动改用认证接口并分页拉取全部仓库。
 
 访问地址：https://weepwood.github.io/projects/
