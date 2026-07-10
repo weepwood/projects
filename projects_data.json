@@ -1,5 +1,17 @@
 [
   {
+    "name": "billiards-game",
+    "fullName": "weepwood/billiards-game",
+    "description": "模拟台球游戏",
+    "homepage": "https://billiards-game-106.netlify.app",
+    "repo": "https://github.com/weepwood/billiards-game",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "billiards-game-106.netlify.app"
+  },
+  {
     "name": "pid-simulator",
     "fullName": "weepwood/pid-simulator",
     "description": "PID 控制器模拟网页 - 交互式实时仿真",
