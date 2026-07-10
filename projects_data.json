@@ -1,5 +1,53 @@
 [
   {
+    "name": "card-collection-hover-effects",
+    "fullName": "weepwood/card-collection-hover-effects",
+    "description": "卡牌收藏悬停特效合集",
+    "homepage": "https://card-collection-hover.netlify.app",
+    "repo": "https://github.com/weepwood/card-collection-hover-effects",
+    "language": "CSS",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "card-collection-hover.netlify.app"
+  },
+  {
+    "name": "3d-engine-principle-program",
+    "fullName": "weepwood/3d-engine-principle-program",
+    "description": "3D Engine Principle Program",
+    "homepage": "https://3d-engine-principle.netlify.app",
+    "repo": "https://github.com/weepwood/3d-engine-principle-program",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "3d-engine-principle.netlify.app"
+  },
+  {
+    "name": "claude-inspired-ui",
+    "fullName": "weepwood/claude-inspired-ui",
+    "description": "Claude 风格 UI 组件库",
+    "homepage": "https://claude-inspired-ui.netlify.app",
+    "repo": "https://github.com/weepwood/claude-inspired-ui",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "claude-inspired-ui.netlify.app"
+  },
+  {
+    "name": "fluxnav",
+    "fullName": "weepwood/fluxnav",
+    "description": "FluxNav · 智能起始页 — AI-Powered Link Dashboard",
+    "homepage": "https://fluxnav.netlify.app",
+    "repo": "https://github.com/weepwood/fluxnav",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "fluxnav.netlify.app"
+  },
+  {
     "name": "billiards-game",
     "fullName": "weepwood/billiards-game",
     "description": "模拟台球游戏",
