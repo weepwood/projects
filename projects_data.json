@@ -1,5 +1,17 @@
 [
   {
+    "name": "pixel-art-drawing-tool",
+    "fullName": "weepwood/pixel-art-drawing-tool",
+    "description": "PIXEL FORGE · 像素画板 - 基于 React + Vite + Tailwind 的像素画绘制工具",
+    "homepage": "https://pixel-art-drawing-tool.netlify.app",
+    "repo": "https://github.com/weepwood/pixel-art-drawing-tool",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-11",
+    "platform": "Netlify",
+    "host": "pixel-art-drawing-tool.netlify.app"
+  },
+  {
     "name": "3d-engine-principle-program",
     "fullName": "weepwood/3d-engine-principle-program",
     "description": "3D Engine Principle Program",
