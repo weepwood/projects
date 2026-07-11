@@ -1,5 +1,17 @@
 [
   {
+    "name": "3d-engine-principle-program",
+    "fullName": "weepwood/3d-engine-principle-program",
+    "description": "3D Engine Principle Program",
+    "homepage": "https://3d-engine-principle.netlify.app",
+    "repo": "https://github.com/weepwood/3d-engine-principle-program",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-11",
+    "platform": "Netlify",
+    "host": "3d-engine-principle.netlify.app"
+  },
+  {
     "name": "card-collection-hover-effects",
     "fullName": "weepwood/card-collection-hover-effects",
     "description": "卡牌收藏悬停特效合集",
@@ -10,18 +22,6 @@
     "updated": "2026-07-10",
     "platform": "Netlify",
     "host": "card-collection-hover.netlify.app"
-  },
-  {
-    "name": "3d-engine-principle-program",
-    "fullName": "weepwood/3d-engine-principle-program",
-    "description": "3D Engine Principle Program",
-    "homepage": "https://3d-engine-principle.netlify.app",
-    "repo": "https://github.com/weepwood/3d-engine-principle-program",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "3d-engine-principle.netlify.app"
   },
   {
     "name": "claude-inspired-ui",
