@@ -1,5 +1,17 @@
 [
   {
+    "name": "s2u",
+    "fullName": "weepwood/s2u",
+    "description": "将 URL Scheme 或任意网址转换为 HTTP 跳转链接的在线工具",
+    "homepage": "https://s2u2.netlify.app",
+    "repo": "https://github.com/weepwood/s2u",
+    "language": "Vue",
+    "stars": 0,
+    "updated": "2026-07-12",
+    "platform": "Netlify",
+    "host": "s2u2.netlify.app"
+  },
+  {
     "name": "pixel-art-drawing-tool",
     "fullName": "weepwood/pixel-art-drawing-tool",
     "description": "PIXEL FORGE · 像素画板 - 基于 React + Vite + Tailwind 的像素画绘制工具",
@@ -490,18 +502,6 @@
     "updated": "2026-07-09",
     "platform": "Netlify",
     "host": "effervescent-parfait-77dc75.netlify.app"
-  },
-  {
-    "name": "s2u",
-    "fullName": "weepwood/s2u",
-    "description": "将 URL Scheme 或任意网址转换为 HTTP 跳转链接的在线工具",
-    "homepage": "https://s2u2.netlify.app",
-    "repo": "https://github.com/weepwood/s2u",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "s2u2.netlify.app"
   },
   {
     "name": "claude-code-vs-desktop",
