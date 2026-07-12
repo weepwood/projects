@@ -1,0 +1,13 @@
+{
+  "name": "weepwood-project-gallery",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static GitHub project demo aggregation page",
+  "scripts": {
+    "generate": "node gen.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
