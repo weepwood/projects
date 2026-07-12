@@ -1,0 +1,39 @@
+name: Validate generator
+
+on:
+  pull_request:
+    paths:
+      - "gen.js"
+      - "tests/**"
+      - "package.json"
+      - ".github/workflows/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "gen.js"
+      - "tests/**"
+      - "package.json"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run tests
+        run: npm test
