@@ -3,98 +3,569 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="weepwood 的在线项目演示聚合页，支持搜索、筛选与排序。" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#f6f8fa" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests" />
 <title>weepwood · 项目演示聚合</title>
 <style>
   :root {
+    color-scheme: light;
     --bg: #f6f8fa;
-    --card: #ffffff;
+    --surface: rgba(255, 255, 255, 0.86);
+    --surface-strong: #ffffff;
     --border: #d8dee4;
+    --border-hover: #b6bec8;
     --text: #1f2328;
     --muted: #656d76;
     --accent: #0969da;
+    --accent-hover: #075bbd;
     --accent-soft: #ddf4ff;
-    --shadow: 0 1px 3px rgba(27,31,36,.08), 0 1px 2px rgba(27,31,36,.04);
+    --shadow: 0 1px 2px rgba(31, 35, 40, 0.04), 0 8px 24px rgba(31, 35, 40, 0.06);
+    --shadow-hover: 0 12px 32px rgba(31, 35, 40, 0.12);
   }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --surface: rgba(22, 27, 34, 0.86);
+    --surface-strong: #161b22;
+    --border: #30363d;
+    --border-hover: #484f58;
+    --text: #f0f6fc;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --accent-soft: rgba(56, 139, 253, 0.16);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.38);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --surface: rgba(22, 27, 34, 0.86);
+      --surface-strong: #161b22;
+      --border: #30363d;
+      --border-hover: #484f58;
+      --text: #f0f6fc;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --accent-soft: rgba(56, 139, 253, 0.16);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
+      --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.38);
+    }
+  }
+
   * { box-sizing: border-box; }
+
+  html {
+    min-width: 320px;
+    scrollbar-gutter: stable;
+  }
+
   body {
     margin: 0;
+    min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", Helvetica, Arial, sans-serif;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 10% 0%, var(--accent-soft), transparent 32rem),
+      var(--bg);
     color: var(--text);
     line-height: 1.5;
+    text-rendering: optimizeLegibility;
   }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
-  header.hero {
-    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-    padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+
+  button,
+  input,
+  select {
+    font: inherit;
   }
-  .avatar { width: 56px; height: 56px; border-radius: 50%; background: #0969da22; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: var(--accent); }
-  .hero h1 { margin: 0; font-size: 26px; }
-  .hero p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-  .hero .meta { margin-left: auto; text-align: right; color: var(--muted); font-size: 13px; }
-  .hero .meta a { color: var(--accent); text-decoration: none; }
-  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
-  .search { flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card); }
-  .search:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip { cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--muted); padding: 6px 12px; border-radius: 999px; font-size: 13px; user-select: none; }
-  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; transition: transform .12s ease, box-shadow .12s ease; }
-  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(27,31,36,.12); }
-  .card h3 { margin: 0 0 6px; font-size: 16px; word-break: break-all; }
-  .card h3 a { color: var(--text); text-decoration: none; }
-  .card h3 a:hover { color: var(--accent); }
-  .desc { color: var(--muted); font-size: 13.5px; flex: 1; margin: 0 0 14px; }
-  .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .tag { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .plat { background: #eaeef2; color: #424a53; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; }
-  .actions { display: flex; gap: 8px; }
-  .btn { flex: 1; text-align: center; padding: 9px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); color: var(--text); }
-  .btn.demo { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn.demo:hover { background: #0860ca; }
-  .btn.code { background: var(--card); }
-  .btn.code:hover { background: #f3f4f6; border-color: #c2cad2; }
-  footer { margin-top: 40px; text-align: center; color: var(--muted); font-size: 12.5px; }
-  .empty { text-align: center; color: var(--muted); padding: 40px; }
+
+  a,
+  button,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    outline-offset: 2px;
+  }
+
+  .wrap {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 40px 22px 72px;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .avatar {
+    width: 58px;
+    height: 58px;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+    border-radius: 18px;
+    background: linear-gradient(145deg, var(--accent-soft), var(--surface-strong));
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    font-weight: 750;
+    color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(23px, 4vw, 30px);
+    letter-spacing: -0.03em;
+  }
+
+  .hero p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .hero-meta a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .theme-toggle,
+  .reset {
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+  }
+
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+  }
+
+  .theme-toggle:hover,
+  .reset:hover {
+    border-color: var(--border-hover);
+    background: var(--accent-soft);
+  }
+
+  .theme-toggle:active,
+  .reset:active {
+    transform: translateY(1px);
+  }
+
+  .controls {
+    position: sticky;
+    top: 12px;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: minmax(240px, 1.8fr) repeat(3, minmax(130px, 0.7fr)) auto;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+  }
+
+  .field {
+    position: relative;
+    min-width: 0;
+  }
+
+  .field label {
+    position: absolute;
+    left: 12px;
+    top: 7px;
+    z-index: 1;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    min-height: 46px;
+    padding: 18px 12px 6px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-strong);
+    color: var(--text);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .field input::placeholder {
+    color: color-mix(in srgb, var(--muted) 78%, transparent);
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    outline: none;
+  }
+
+  .reset {
+    min-height: 46px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 34px;
+    margin: 0 2px 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .summary strong {
+    color: var(--text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    min-width: 0;
+    min-height: 248px;
+    padding: 19px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface-strong);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 248px;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card h2 {
+    min-width: 0;
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .card h2 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .card h2 a:hover {
+    color: var(--accent);
+  }
+
+  .platform {
+    flex: none;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    background: var(--bg);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .host {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .description {
+    display: -webkit-box;
+    min-height: 61px;
+    margin: 14px 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: auto;
+    margin-bottom: 14px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .metadata-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .language-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .button {
+    min-height: 40px;
+    display: inline-grid;
+    place-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    background: var(--surface-strong);
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+
+  .button:hover {
+    border-color: var(--border-hover);
+    background: var(--accent-soft);
+  }
+
+  .button:active {
+    transform: translateY(1px);
+  }
+
+  .button.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .button.primary:hover {
+    border-color: var(--accent-hover);
+    background: var(--accent-hover);
+  }
+
+  .empty {
+    display: none;
+    padding: 64px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .empty h2 {
+    margin: 0 0 6px;
+    color: var(--text);
+    font-size: 18px;
+  }
+
+  footer {
+    margin-top: 44px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 860px) {
+    .controls {
+      position: static;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .field.search-field {
+      grid-column: 1 / -1;
+    }
+
+    .reset {
+      grid-column: span 1;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .wrap {
+      padding: 24px 14px 52px;
+    }
+
+    .hero {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .hero-meta {
+      grid-column: 1 / -1;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+    }
+
+    .controls {
+      grid-template-columns: 1fr;
+      padding: 10px;
+    }
+
+    .field.search-field,
+    .reset {
+      grid-column: auto;
+    }
+
+    .card {
+      min-height: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="avatar">W</div>
+    <div class="avatar" aria-hidden="true">W</div>
     <div>
       <h1>weepwood · 项目演示聚合</h1>
-      <p>从 GitHub 仓库详情的 Website 字段提取，汇集全部在线演示网址</p>
+      <p>集中浏览设有 Website 的 GitHub 项目，快速查找演示与源码</p>
     </div>
-    <div class="meta">
-      <div><strong id="count">0</strong> 个演示项目</div>
-      <div>更新于 2026-07-12 · <a href="https://github.com/weepwood" target="_blank" rel="noopener">@weepwood</a></div>
+    <div class="hero-meta">
+      <div>
+        <div><strong id="totalCount">0</strong> 个演示项目</div>
+        <div>更新于 2026-07-12 · <a href="https://github.com/weepwood" target="_blank" rel="noopener noreferrer">@weepwood</a></div>
+      </div>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换深色模式" title="切换主题">◐</button>
     </div>
   </header>
 
-  <div class="controls">
-    <input id="search" class="search" type="text" placeholder="搜索项目名、描述或语言…" />
-    <div class="chips" id="platformChips"></div>
-    <div class="chips" id="langChips"></div>
-  </div>
+  <main>
+    <section class="controls" aria-label="项目筛选">
+      <div class="field search-field">
+        <label for="search">搜索</label>
+        <input id="search" type="search" autocomplete="off" placeholder="项目名、描述、语言或网址" />
+      </div>
+      <div class="field">
+        <label for="platformFilter">部署平台</label>
+        <select id="platformFilter"></select>
+      </div>
+      <div class="field">
+        <label for="languageFilter">开发语言</label>
+        <select id="languageFilter"></select>
+      </div>
+      <div class="field">
+        <label for="sortBy">排序方式</label>
+        <select id="sortBy">
+          <option value="updated">最近更新</option>
+          <option value="stars">Stars 较多</option>
+          <option value="name">项目名称</option>
+        </select>
+      </div>
+      <button id="resetFilters" class="reset" type="button">重置筛选</button>
+    </section>
 
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" style="display:none">没有匹配的项目</div>
+    <div class="summary" aria-live="polite">
+      <span id="resultSummary"></span>
+      <span id="activeSummary"></span>
+    </div>
+
+    <section class="grid" id="grid" aria-label="项目列表"></section>
+
+    <section class="empty" id="empty">
+      <h2>没有匹配的项目</h2>
+      <div>尝试缩短关键词或重置筛选条件。</div>
+    </section>
+  </main>
 
   <footer>
-    数据来源于 weepwood 的 GitHub 公开仓库 · 本页为静态生成，部署于 GitHub Pages
+    数据来自 GitHub 仓库元信息 · 静态生成并部署于 GitHub Pages
   </footer>
 </div>
 
 <script>
+"use strict";
+
 const REPOS = [
   {
     "name": "s2u",
     "fullName": "weepwood/s2u",
     "description": "将 URL Scheme 或任意网址转换为 HTTP 跳转链接的在线工具",
-    "homepage": "https://s2u2.netlify.app",
+    "homepage": "https://s2u2.netlify.app/",
     "repo": "https://github.com/weepwood/s2u",
     "language": "Vue",
     "stars": 0,
@@ -103,22 +574,10 @@ const REPOS = [
     "host": "s2u2.netlify.app"
   },
   {
-    "name": "pixel-art-drawing-tool",
-    "fullName": "weepwood/pixel-art-drawing-tool",
-    "description": "PIXEL FORGE · 像素画板 - 基于 React + Vite + Tailwind 的像素画绘制工具",
-    "homepage": "https://pixel-art-drawing-tool.netlify.app",
-    "repo": "https://github.com/weepwood/pixel-art-drawing-tool",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-11",
-    "platform": "Netlify",
-    "host": "pixel-art-drawing-tool.netlify.app"
-  },
-  {
     "name": "3d-engine-principle-program",
     "fullName": "weepwood/3d-engine-principle-program",
     "description": "3D Engine Principle Program",
-    "homepage": "https://3d-engine-principle.netlify.app",
+    "homepage": "https://3d-engine-principle.netlify.app/",
     "repo": "https://github.com/weepwood/3d-engine-principle-program",
     "language": "TypeScript",
     "stars": 0,
@@ -127,10 +586,46 @@ const REPOS = [
     "host": "3d-engine-principle.netlify.app"
   },
   {
+    "name": "pixel-art-drawing-tool",
+    "fullName": "weepwood/pixel-art-drawing-tool",
+    "description": "PIXEL FORGE · 像素画板 - 基于 React + Vite + Tailwind 的像素画绘制工具",
+    "homepage": "https://pixel-art-drawing-tool.netlify.app/",
+    "repo": "https://github.com/weepwood/pixel-art-drawing-tool",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-11",
+    "platform": "Netlify",
+    "host": "pixel-art-drawing-tool.netlify.app"
+  },
+  {
+    "name": "anatomy-3d-viewer",
+    "fullName": "weepwood/anatomy-3d-viewer",
+    "description": "3D人体解剖医学演示 - 交互式Three.js查看器",
+    "homepage": "https://anatomy-3d-viewer.netlify.app/",
+    "repo": "https://github.com/weepwood/anatomy-3d-viewer",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "anatomy-3d-viewer.netlify.app"
+  },
+  {
+    "name": "billiards-game",
+    "fullName": "weepwood/billiards-game",
+    "description": "模拟台球游戏",
+    "homepage": "https://billiards-game-106.netlify.app/",
+    "repo": "https://github.com/weepwood/billiards-game",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "billiards-game-106.netlify.app"
+  },
+  {
     "name": "card-collection-hover-effects",
     "fullName": "weepwood/card-collection-hover-effects",
     "description": "卡牌收藏悬停特效合集",
-    "homepage": "https://card-collection-hover.netlify.app",
+    "homepage": "https://card-collection-hover.netlify.app/",
     "repo": "https://github.com/weepwood/card-collection-hover-effects",
     "language": "CSS",
     "stars": 0,
@@ -142,7 +637,7 @@ const REPOS = [
     "name": "claude-inspired-ui",
     "fullName": "weepwood/claude-inspired-ui",
     "description": "Claude 风格 UI 组件库",
-    "homepage": "https://claude-inspired-ui.netlify.app",
+    "homepage": "https://claude-inspired-ui.netlify.app/",
     "repo": "https://github.com/weepwood/claude-inspired-ui",
     "language": "TypeScript",
     "stars": 0,
@@ -151,10 +646,22 @@ const REPOS = [
     "host": "claude-inspired-ui.netlify.app"
   },
   {
+    "name": "design-weekly-hub",
+    "fullName": "weepwood/design-weekly-hub",
+    "description": "Moonvy 设计素材周刊全部216期资源分类导航 - 3063条设计资源，8大分类",
+    "homepage": "https://design-weekly-hub.netlify.app/",
+    "repo": "https://github.com/weepwood/design-weekly-hub",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "design-weekly-hub.netlify.app"
+  },
+  {
     "name": "fluxnav",
     "fullName": "weepwood/fluxnav",
     "description": "FluxNav · 智能起始页 — AI-Powered Link Dashboard",
-    "homepage": "https://fluxnav.netlify.app",
+    "homepage": "https://fluxnav.netlify.app/",
     "repo": "https://github.com/weepwood/fluxnav",
     "language": "TypeScript",
     "stars": 0,
@@ -163,46 +670,10 @@ const REPOS = [
     "host": "fluxnav.netlify.app"
   },
   {
-    "name": "billiards-game",
-    "fullName": "weepwood/billiards-game",
-    "description": "模拟台球游戏",
-    "homepage": "https://billiards-game-106.netlify.app",
-    "repo": "https://github.com/weepwood/billiards-game",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "billiards-game-106.netlify.app"
-  },
-  {
-    "name": "pid-simulator",
-    "fullName": "weepwood/pid-simulator",
-    "description": "PID 控制器模拟网页 - 交互式实时仿真",
-    "homepage": "https://pid-simulator.netlify.app",
-    "repo": "https://github.com/weepwood/pid-simulator",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "pid-simulator.netlify.app"
-  },
-  {
-    "name": "anatomy-3d-viewer",
-    "fullName": "weepwood/anatomy-3d-viewer",
-    "description": "3D人体解剖医学演示 - 交互式Three.js查看器",
-    "homepage": "https://anatomy-3d-viewer.netlify.app",
-    "repo": "https://github.com/weepwood/anatomy-3d-viewer",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "anatomy-3d-viewer.netlify.app"
-  },
-  {
     "name": "google-homepage-mirror",
     "fullName": "weepwood/google-homepage-mirror",
     "description": "1:1 static mirror of the Google homepage — pixel-perfect clone; search redirects to real Google",
-    "homepage": "https://google-homepage-mirror.netlify.app",
+    "homepage": "https://google-homepage-mirror.netlify.app/",
     "repo": "https://github.com/weepwood/google-homepage-mirror",
     "language": "HTML",
     "stars": 0,
@@ -211,10 +682,22 @@ const REPOS = [
     "host": "google-homepage-mirror.netlify.app"
   },
   {
+    "name": "icon-museum-mirror",
+    "fullName": "weepwood/icon-museum-mirror",
+    "description": "icon.museum 1:1 static mirror: curated app icon gallery",
+    "homepage": "https://icon-museum-mirror.netlify.app/",
+    "repo": "https://github.com/weepwood/icon-museum-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "icon-museum-mirror.netlify.app"
+  },
+  {
     "name": "nsfw-detector",
     "fullName": "weepwood/nsfw-detector",
     "description": "Local NSFW image detection tool powered by nsfwjs + TensorFlow.js",
-    "homepage": "https://nsfw-detector.netlify.app",
+    "homepage": "https://nsfw-detector.netlify.app/",
     "repo": "https://github.com/weepwood/nsfw-detector",
     "language": "HTML",
     "stars": 0,
@@ -223,10 +706,46 @@ const REPOS = [
     "host": "nsfw-detector.netlify.app"
   },
   {
+    "name": "personal-diary",
+    "fullName": "weepwood/personal-diary",
+    "description": "个人日记应用 - 基于 Next.js + shadcn/ui 构建",
+    "homepage": "https://diary-20260710.netlify.app/",
+    "repo": "https://github.com/weepwood/personal-diary",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "diary-20260710.netlify.app"
+  },
+  {
+    "name": "pid-simulator",
+    "fullName": "weepwood/pid-simulator",
+    "description": "PID 控制器模拟网页 - 交互式实时仿真",
+    "homepage": "https://pid-simulator.netlify.app/",
+    "repo": "https://github.com/weepwood/pid-simulator",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "pid-simulator.netlify.app"
+  },
+  {
+    "name": "sakana",
+    "fullName": "weepwood/sakana",
+    "description": "Lycoris Recoil 石蒜模拟器 - Sakana!",
+    "homepage": "https://sakana-lycoris.netlify.app/",
+    "repo": "https://github.com/weepwood/sakana",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-10",
+    "platform": "Netlify",
+    "host": "sakana-lycoris.netlify.app"
+  },
+  {
     "name": "vue-principles",
     "fullName": "weepwood/vue-principles",
     "description": "Vue 原理可视化探索 - 通过交互式可视化理解 Vue 框架核心运行机制",
-    "homepage": "https://vue-principles-interactive.netlify.app",
+    "homepage": "https://vue-principles-interactive.netlify.app/",
     "repo": "https://github.com/weepwood/vue-principles",
     "language": "Vue",
     "stars": 0,
@@ -238,349 +757,13 @@ const REPOS = [
     "name": "win11-glassmorphism",
     "fullName": "weepwood/win11-glassmorphism",
     "description": "Windows 11 Glassmorphism UI - 基于 Figma 社区设计",
-    "homepage": "https://lively-chebakia-15f3dd.netlify.app",
+    "homepage": "https://lively-chebakia-15f3dd.netlify.app/",
     "repo": "https://github.com/weepwood/win11-glassmorphism",
     "language": "HTML",
     "stars": 0,
     "updated": "2026-07-10",
     "platform": "Netlify",
     "host": "lively-chebakia-15f3dd.netlify.app"
-  },
-  {
-    "name": "sakana",
-    "fullName": "weepwood/sakana",
-    "description": "Lycoris Recoil 石蒜模拟器 - Sakana!",
-    "homepage": "https://sakana-lycoris.netlify.app",
-    "repo": "https://github.com/weepwood/sakana",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "sakana-lycoris.netlify.app"
-  },
-  {
-    "name": "personal-diary",
-    "fullName": "weepwood/personal-diary",
-    "description": "个人日记应用 - 基于 Next.js + shadcn/ui 构建",
-    "homepage": "https://diary-20260710.netlify.app",
-    "repo": "https://github.com/weepwood/personal-diary",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "diary-20260710.netlify.app"
-  },
-  {
-    "name": "icon-museum-mirror",
-    "fullName": "weepwood/icon-museum-mirror",
-    "description": "icon.museum 1:1 static mirror: curated app icon gallery",
-    "homepage": "https://icon-museum-mirror.netlify.app",
-    "repo": "https://github.com/weepwood/icon-museum-mirror",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "icon-museum-mirror.netlify.app"
-  },
-  {
-    "name": "design-weekly-hub",
-    "fullName": "weepwood/design-weekly-hub",
-    "description": "Moonvy 设计素材周刊全部216期资源分类导航 - 3063条设计资源，8大分类",
-    "homepage": "https://design-weekly-hub.netlify.app",
-    "repo": "https://github.com/weepwood/design-weekly-hub",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-10",
-    "platform": "Netlify",
-    "host": "design-weekly-hub.netlify.app"
-  },
-  {
-    "name": "chaz-5310-mirror",
-    "fullName": "weepwood/chaz-5310-mirror",
-    "description": "Nokia 5310 XpressMusic 3D 体验站 1:1 镜像 (mirror of chaz.fun/phone/5310/)",
-    "homepage": "https://nokia-5310-mirror.netlify.app",
-    "repo": "https://github.com/weepwood/chaz-5310-mirror",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "nokia-5310-mirror.netlify.app"
-  },
-  {
-    "name": "firewood-mirror",
-    "fullName": "weepwood/firewood-mirror",
-    "description": "1:1 镜像 screen.toys/firewood 的 Three.js 劈柴交互体验",
-    "homepage": "https://firewood-mirror.netlify.app",
-    "repo": "https://github.com/weepwood/firewood-mirror",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "firewood-mirror.netlify.app"
-  },
-  {
-    "name": "linear-algebra-viz",
-    "fullName": "weepwood/linear-algebra-viz",
-    "description": "交互式线性代数可视化学习网站（纯前端 Canvas 单页应用）",
-    "homepage": "https://linear-algebra-viz.netlify.app",
-    "repo": "https://github.com/weepwood/linear-algebra-viz",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "linear-algebra-viz.netlify.app"
-  },
-  {
-    "name": "ui-elements-showcase",
-    "fullName": "weepwood/ui-elements-showcase",
-    "description": "仿 uiverse.io 的前端 UI 元素展示库（Vue 3 + Element Plus）：实时预览、搜索、分类、收藏、在线编辑、下载整页、亮暗主题。",
-    "homepage": "https://ui-elements-showcase.netlify.app",
-    "repo": "https://github.com/weepwood/ui-elements-showcase",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "ui-elements-showcase.netlify.app"
-  },
-  {
-    "name": "mingchao-story",
-    "fullName": "weepwood/mingchao-story",
-    "description": "鸣潮 · 潮汐任务剧情分析网页（整合 1.0-3.1 主线，纯前端可交互）",
-    "homepage": "https://mingchao-story-analysis.netlify.app",
-    "repo": "https://github.com/weepwood/mingchao-story",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "mingchao-story-analysis.netlify.app"
-  },
-  {
-    "name": "board-games",
-    "fullName": "weepwood/board-games",
-    "description": "网页围棋/五子棋/象棋人机对战（纯前端）",
-    "homepage": "https://board-games-154.netlify.app",
-    "repo": "https://github.com/weepwood/board-games",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "board-games-154.netlify.app"
-  },
-  {
-    "name": "makemepulse-2019-mirror",
-    "fullName": "weepwood/makemepulse-2019-mirror",
-    "description": "1:1 static mirror of makemepulse 2019 \"Nomadic Tribe\" interactive WebGL site",
-    "homepage": "https://makemepulse-2019-mirror.netlify.app",
-    "repo": "https://github.com/weepwood/makemepulse-2019-mirror",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "makemepulse-2019-mirror.netlify.app"
-  },
-  {
-    "name": "algo-note-visualization",
-    "fullName": "weepwood/algo-note-visualization",
-    "description": "算法通关手册题解可视化 · AlgoNote 1500+ 道 LeetCode 题解的可视化检索面板（Markdown + KaTeX 公式渲染，完全离线）",
-    "homepage": "https://algo-visualizer-15959.netlify.app",
-    "repo": "https://github.com/weepwood/algo-note-visualization",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "algo-visualizer-15959.netlify.app"
-  },
-  {
-    "name": "algo-visualizer",
-    "fullName": "weepwood/algo-visualizer",
-    "description": "数据结构与算法交互式可视化（单文件静态站点）",
-    "homepage": "https://algo-visualizer-15959.netlify.app",
-    "repo": "https://github.com/weepwood/algo-visualizer",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "algo-visualizer-15959.netlify.app"
-  },
-  {
-    "name": "opencode-data-mirror",
-    "fullName": "weepwood/opencode-data-mirror",
-    "description": "1:1 mirror of opencode.ai/zh/data (static snapshot)",
-    "homepage": "https://opencode-data-mirror.netlify.app",
-    "repo": "https://github.com/weepwood/opencode-data-mirror",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "opencode-data-mirror.netlify.app"
-  },
-  {
-    "name": "ccunpacked-replica",
-    "fullName": "weepwood/ccunpacked-replica",
-    "description": "1:1 static replica of Claude Code Unpacked (ccunpacked.dev)",
-    "homepage": "https://ccunpacked-replica.netlify.app",
-    "repo": "https://github.com/weepwood/ccunpacked-replica",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "ccunpacked-replica.netlify.app"
-  },
-  {
-    "name": "design-style-library",
-    "fullName": "weepwood/design-style-library",
-    "description": "Design Style Library · 设计风格馆藏 — 一个集中保存与浏览不同网页设计风格的静态项目",
-    "homepage": "https://design-style-library.netlify.app",
-    "repo": "https://github.com/weepwood/design-style-library",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "design-style-library.netlify.app"
-  },
-  {
-    "name": "ruanyf-weekly-search",
-    "fullName": "weepwood/ruanyf-weekly-search",
-    "description": "阮一峰科技爱好者周刊可搜索网页：402期文章跨板块检索 + 1866条资源按类型分类汇总",
-    "homepage": "https://ruanyf-weekly-search.netlify.app",
-    "repo": "https://github.com/weepwood/ruanyf-weekly-search",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "ruanyf-weekly-search.netlify.app"
-  },
-  {
-    "name": "logiclab",
-    "fullName": "weepwood/logiclab",
-    "description": "类 Logisim 的数字逻辑电路仿真器，用于学习计算机底层硬件原理",
-    "homepage": "https://logiclab-620.netlify.app",
-    "repo": "https://github.com/weepwood/logiclab",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "logiclab-620.netlify.app"
-  },
-  {
-    "name": "math-viz",
-    "fullName": "weepwood/math-viz",
-    "description": "高等数学常见函数图谱与可视化学习程序",
-    "homepage": "https://math-viz-446.netlify.app",
-    "repo": "https://github.com/weepwood/math-viz",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "math-viz-446.netlify.app"
-  },
-  {
-    "name": "v8-engine-visualization",
-    "fullName": "weepwood/v8-engine-visualization",
-    "description": "V8 引擎运行原理可视化 · 交互式教学网页（纯静态单文件）",
-    "homepage": "https://v8-engine-visualization.netlify.app",
-    "repo": "https://github.com/weepwood/v8-engine-visualization",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "v8-engine-visualization.netlify.app"
-  },
-  {
-    "name": "cellular-automata",
-    "fullName": "weepwood/cellular-automata",
-    "description": "基于元胞自动机的工程化平台：生命游戏、兰顿蚂蚁、插件化规则引擎与模版库",
-    "homepage": "https://cellular-automata-348.netlify.app",
-    "repo": "https://github.com/weepwood/cellular-automata",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "cellular-automata-348.netlify.app"
-  },
-  {
-    "name": "opencode-data-zh",
-    "fullName": "weepwood/opencode-data-zh",
-    "description": "一比一还原 opencode.ai/zh/data 的 AI 模型使用排名数据页（静态复制品）",
-    "homepage": "https://opencode-data-zh.netlify.app",
-    "repo": "https://github.com/weepwood/opencode-data-zh",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Netlify",
-    "host": "opencode-data-zh.netlify.app"
-  },
-  {
-    "name": "nexora-landing",
-    "fullName": "weepwood/nexora-landing",
-    "description": "Nexora 智能自动化产品官网，Vite + React + Tailwind 构建的静态落地页",
-    "homepage": "https://weepwood.github.io/nexora-landing/",
-    "repo": "https://github.com/weepwood/nexora-landing",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "GitHub Pages",
-    "host": "weepwood.github.io/nexora-landing/"
-  },
-  {
-    "name": "img-project",
-    "fullName": "weepwood/img-project",
-    "description": "GitHub Pages 静态图片画廊，支持缩略图生成与相册分类",
-    "homepage": "https://weepwood.github.io/img-project/",
-    "repo": "https://github.com/weepwood/img-project",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "GitHub Pages",
-    "host": "weepwood.github.io/img-project/"
-  },
-  {
-    "name": "weepwood-project-demo",
-    "fullName": "weepwood/weepwood-project-demo",
-    "description": "基于 Vitecamp 模板的个人项目演示页面（Vue 3 + Element Plus）",
-    "homepage": "https://demo.halo.wang/",
-    "repo": "https://github.com/weepwood/weepwood-project-demo",
-    "language": "HTML",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "自定义",
-    "host": "demo.halo.wang"
-  },
-  {
-    "name": "spine",
-    "fullName": "weepwood/spine",
-    "description": "Spine 角色展示平台，支持角色浏览、搜索筛选和响应式设计",
-    "homepage": "https://spine-ten.vercel.app",
-    "repo": "https://github.com/weepwood/spine",
-    "language": "JavaScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Vercel",
-    "host": "spine-ten.vercel.app"
-  },
-  {
-    "name": "wmath",
-    "fullName": "weepwood/wmath",
-    "description": "基于 Obsidian 的高等数学知识库，构建微积分、线代、概率论互联知识图谱",
-    "homepage": "https://weepwood.github.io/wmath/",
-    "repo": "https://github.com/weepwood/wmath",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "GitHub Pages",
-    "host": "weepwood.github.io/wmath/"
-  },
-  {
-    "name": "blog-system",
-    "fullName": "weepwood/blog-system",
-    "description": "全栈博客系统（React + Express + Supabase），支持 Markdown 编辑与评论",
-    "homepage": "https://blog-system-frontend-rho.vercel.app",
-    "repo": "https://github.com/weepwood/blog-system",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Vercel",
-    "host": "blog-system-frontend-rho.vercel.app"
   },
   {
     "name": "ai-ppt-1",
@@ -595,28 +778,28 @@ const REPOS = [
     "host": "effervescent-parfait-77dc75.netlify.app"
   },
   {
-    "name": "claude-code-vs-desktop",
-    "fullName": "weepwood/claude-code-vs-desktop",
-    "description": "Claude Code 命令行 vs 桌面端 功能对比与选型指南",
-    "homepage": "https://claude-code-vs-desktop.netlify.app/",
-    "repo": "https://github.com/weepwood/claude-code-vs-desktop",
-    "language": "HTML",
+    "name": "algo-note-visualization",
+    "fullName": "weepwood/algo-note-visualization",
+    "description": "算法通关手册题解可视化 · AlgoNote 1500+ 道 LeetCode 题解的可视化检索面板（Markdown + KaTeX 公式渲染，完全离线）",
+    "homepage": "https://algo-visualizer-15959.netlify.app/",
+    "repo": "https://github.com/weepwood/algo-note-visualization",
+    "language": "JavaScript",
     "stars": 0,
     "updated": "2026-07-09",
     "platform": "Netlify",
-    "host": "claude-code-vs-desktop.netlify.app"
+    "host": "algo-visualizer-15959.netlify.app"
   },
   {
-    "name": "claude-code-guide",
-    "fullName": "weepwood/claude-code-guide",
-    "description": "Claude Code 使用指南 —— 终端原生 AI 编程助手的完整功能说明和最佳实践",
-    "homepage": "https://claude-code-guide-135.netlify.app",
-    "repo": "https://github.com/weepwood/claude-code-guide",
+    "name": "algo-visualizer",
+    "fullName": "weepwood/algo-visualizer",
+    "description": "数据结构与算法交互式可视化（单文件静态站点）",
+    "homepage": "https://algo-visualizer-15959.netlify.app/",
+    "repo": "https://github.com/weepwood/algo-visualizer",
     "language": "HTML",
     "stars": 0,
     "updated": "2026-07-09",
     "platform": "Netlify",
-    "host": "claude-code-guide-135.netlify.app"
+    "host": "algo-visualizer-15959.netlify.app"
   },
   {
     "name": "Arknights-FlowingPoints",
@@ -629,6 +812,294 @@ const REPOS = [
     "updated": "2026-07-09",
     "platform": "Netlify",
     "host": "arkpoints-120.netlify.app"
+  },
+  {
+    "name": "blog-system",
+    "fullName": "weepwood/blog-system",
+    "description": "全栈博客系统（React + Express + Supabase），支持 Markdown 编辑与评论",
+    "homepage": "https://blog-system-frontend-rho.vercel.app/",
+    "repo": "https://github.com/weepwood/blog-system",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Vercel",
+    "host": "blog-system-frontend-rho.vercel.app"
+  },
+  {
+    "name": "board-games",
+    "fullName": "weepwood/board-games",
+    "description": "网页围棋/五子棋/象棋人机对战（纯前端）",
+    "homepage": "https://board-games-154.netlify.app/",
+    "repo": "https://github.com/weepwood/board-games",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "board-games-154.netlify.app"
+  },
+  {
+    "name": "ccunpacked-replica",
+    "fullName": "weepwood/ccunpacked-replica",
+    "description": "1:1 static replica of Claude Code Unpacked (ccunpacked.dev)",
+    "homepage": "https://ccunpacked-replica.netlify.app/",
+    "repo": "https://github.com/weepwood/ccunpacked-replica",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ccunpacked-replica.netlify.app"
+  },
+  {
+    "name": "cellular-automata",
+    "fullName": "weepwood/cellular-automata",
+    "description": "基于元胞自动机的工程化平台：生命游戏、兰顿蚂蚁、插件化规则引擎与模版库",
+    "homepage": "https://cellular-automata-348.netlify.app/",
+    "repo": "https://github.com/weepwood/cellular-automata",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "cellular-automata-348.netlify.app"
+  },
+  {
+    "name": "chaz-5310-mirror",
+    "fullName": "weepwood/chaz-5310-mirror",
+    "description": "Nokia 5310 XpressMusic 3D 体验站 1:1 镜像 (mirror of chaz.fun/phone/5310/)",
+    "homepage": "https://nokia-5310-mirror.netlify.app/",
+    "repo": "https://github.com/weepwood/chaz-5310-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "nokia-5310-mirror.netlify.app"
+  },
+  {
+    "name": "claude-code-guide",
+    "fullName": "weepwood/claude-code-guide",
+    "description": "Claude Code 使用指南 —— 终端原生 AI 编程助手的完整功能说明和最佳实践",
+    "homepage": "https://claude-code-guide-135.netlify.app/",
+    "repo": "https://github.com/weepwood/claude-code-guide",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "claude-code-guide-135.netlify.app"
+  },
+  {
+    "name": "claude-code-vs-desktop",
+    "fullName": "weepwood/claude-code-vs-desktop",
+    "description": "Claude Code 命令行 vs 桌面端 功能对比与选型指南",
+    "homepage": "https://claude-code-vs-desktop.netlify.app/",
+    "repo": "https://github.com/weepwood/claude-code-vs-desktop",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "claude-code-vs-desktop.netlify.app"
+  },
+  {
+    "name": "design-style-library",
+    "fullName": "weepwood/design-style-library",
+    "description": "Design Style Library · 设计风格馆藏 — 一个集中保存与浏览不同网页设计风格的静态项目",
+    "homepage": "https://design-style-library.netlify.app/",
+    "repo": "https://github.com/weepwood/design-style-library",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "design-style-library.netlify.app"
+  },
+  {
+    "name": "firewood-mirror",
+    "fullName": "weepwood/firewood-mirror",
+    "description": "1:1 镜像 screen.toys/firewood 的 Three.js 劈柴交互体验",
+    "homepage": "https://firewood-mirror.netlify.app/",
+    "repo": "https://github.com/weepwood/firewood-mirror",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "firewood-mirror.netlify.app"
+  },
+  {
+    "name": "img-project",
+    "fullName": "weepwood/img-project",
+    "description": "GitHub Pages 静态图片画廊，支持缩略图生成与相册分类",
+    "homepage": "https://weepwood.github.io/img-project/",
+    "repo": "https://github.com/weepwood/img-project",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/img-project"
+  },
+  {
+    "name": "linear-algebra-viz",
+    "fullName": "weepwood/linear-algebra-viz",
+    "description": "交互式线性代数可视化学习网站（纯前端 Canvas 单页应用）",
+    "homepage": "https://linear-algebra-viz.netlify.app/",
+    "repo": "https://github.com/weepwood/linear-algebra-viz",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "linear-algebra-viz.netlify.app"
+  },
+  {
+    "name": "logiclab",
+    "fullName": "weepwood/logiclab",
+    "description": "类 Logisim 的数字逻辑电路仿真器，用于学习计算机底层硬件原理",
+    "homepage": "https://logiclab-620.netlify.app/",
+    "repo": "https://github.com/weepwood/logiclab",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "logiclab-620.netlify.app"
+  },
+  {
+    "name": "makemepulse-2019-mirror",
+    "fullName": "weepwood/makemepulse-2019-mirror",
+    "description": "1:1 static mirror of makemepulse 2019 \"Nomadic Tribe\" interactive WebGL site",
+    "homepage": "https://makemepulse-2019-mirror.netlify.app/",
+    "repo": "https://github.com/weepwood/makemepulse-2019-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "makemepulse-2019-mirror.netlify.app"
+  },
+  {
+    "name": "math-viz",
+    "fullName": "weepwood/math-viz",
+    "description": "高等数学常见函数图谱与可视化学习程序",
+    "homepage": "https://math-viz-446.netlify.app/",
+    "repo": "https://github.com/weepwood/math-viz",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "math-viz-446.netlify.app"
+  },
+  {
+    "name": "mingchao-story",
+    "fullName": "weepwood/mingchao-story",
+    "description": "鸣潮 · 潮汐任务剧情分析网页（整合 1.0-3.1 主线，纯前端可交互）",
+    "homepage": "https://mingchao-story-analysis.netlify.app/",
+    "repo": "https://github.com/weepwood/mingchao-story",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "mingchao-story-analysis.netlify.app"
+  },
+  {
+    "name": "nexora-landing",
+    "fullName": "weepwood/nexora-landing",
+    "description": "Nexora 智能自动化产品官网，Vite + React + Tailwind 构建的静态落地页",
+    "homepage": "https://weepwood.github.io/nexora-landing/",
+    "repo": "https://github.com/weepwood/nexora-landing",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/nexora-landing"
+  },
+  {
+    "name": "opencode-data-mirror",
+    "fullName": "weepwood/opencode-data-mirror",
+    "description": "1:1 mirror of opencode.ai/zh/data (static snapshot)",
+    "homepage": "https://opencode-data-mirror.netlify.app/",
+    "repo": "https://github.com/weepwood/opencode-data-mirror",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "opencode-data-mirror.netlify.app"
+  },
+  {
+    "name": "opencode-data-zh",
+    "fullName": "weepwood/opencode-data-zh",
+    "description": "一比一还原 opencode.ai/zh/data 的 AI 模型使用排名数据页（静态复制品）",
+    "homepage": "https://opencode-data-zh.netlify.app/",
+    "repo": "https://github.com/weepwood/opencode-data-zh",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "opencode-data-zh.netlify.app"
+  },
+  {
+    "name": "ruanyf-weekly-search",
+    "fullName": "weepwood/ruanyf-weekly-search",
+    "description": "阮一峰科技爱好者周刊可搜索网页：402期文章跨板块检索 + 1866条资源按类型分类汇总",
+    "homepage": "https://ruanyf-weekly-search.netlify.app/",
+    "repo": "https://github.com/weepwood/ruanyf-weekly-search",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ruanyf-weekly-search.netlify.app"
+  },
+  {
+    "name": "spine",
+    "fullName": "weepwood/spine",
+    "description": "Spine 角色展示平台，支持角色浏览、搜索筛选和响应式设计",
+    "homepage": "https://spine-ten.vercel.app/",
+    "repo": "https://github.com/weepwood/spine",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Vercel",
+    "host": "spine-ten.vercel.app"
+  },
+  {
+    "name": "ui-elements-showcase",
+    "fullName": "weepwood/ui-elements-showcase",
+    "description": "仿 uiverse.io 的前端 UI 元素展示库（Vue 3 + Element Plus）：实时预览、搜索、分类、收藏、在线编辑、下载整页、亮暗主题。",
+    "homepage": "https://ui-elements-showcase.netlify.app/",
+    "repo": "https://github.com/weepwood/ui-elements-showcase",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "ui-elements-showcase.netlify.app"
+  },
+  {
+    "name": "v8-engine-visualization",
+    "fullName": "weepwood/v8-engine-visualization",
+    "description": "V8 引擎运行原理可视化 · 交互式教学网页（纯静态单文件）",
+    "homepage": "https://v8-engine-visualization.netlify.app/",
+    "repo": "https://github.com/weepwood/v8-engine-visualization",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "Netlify",
+    "host": "v8-engine-visualization.netlify.app"
+  },
+  {
+    "name": "weepwood-project-demo",
+    "fullName": "weepwood/weepwood-project-demo",
+    "description": "基于 Vitecamp 模板的个人项目演示页面（Vue 3 + Element Plus）",
+    "homepage": "https://demo.halo.wang/",
+    "repo": "https://github.com/weepwood/weepwood-project-demo",
+    "language": "HTML",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "自定义",
+    "host": "demo.halo.wang"
+  },
+  {
+    "name": "wmath",
+    "fullName": "weepwood/wmath",
+    "description": "基于 Obsidian 的高等数学知识库，构建微积分、线代、概率论互联知识图谱",
+    "homepage": "https://weepwood.github.io/wmath/",
+    "repo": "https://github.com/weepwood/wmath",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-09",
+    "platform": "GitHub Pages",
+    "host": "weepwood.github.io/wmath"
   },
   {
     "name": "dev-env",
@@ -652,13 +1123,13 @@ const REPOS = [
     "stars": 0,
     "updated": "2025-06-11",
     "platform": "GitHub Pages",
-    "host": "weepwood.github.io/302/"
+    "host": "weepwood.github.io/302"
   },
   {
     "name": "weread2notion",
     "fullName": "weepwood/weread2notion",
     "description": "将微信读书划线同步到Notion",
-    "homepage": "https://book.malinkang.com",
+    "homepage": "https://book.malinkang.com/",
     "repo": "https://github.com/weepwood/weread2notion",
     "language": "Python",
     "stars": 0,
@@ -682,7 +1153,7 @@ const REPOS = [
     "name": "demo-x",
     "fullName": "weepwood/demo-x",
     "description": "暂无描述",
-    "homepage": "https://demo-x-two.vercel.app",
+    "homepage": "https://demo-x-two.vercel.app/",
     "repo": "https://github.com/weepwood/demo-x",
     "language": "CSS",
     "stars": 0,
@@ -694,7 +1165,7 @@ const REPOS = [
     "name": "my-docusaurus-website",
     "fullName": "weepwood/my-docusaurus-website",
     "description": "暂无描述",
-    "homepage": "https://my-docusaurus-website-one.vercel.app",
+    "homepage": "https://my-docusaurus-website-one.vercel.app/",
     "repo": "https://github.com/weepwood/my-docusaurus-website",
     "language": "JavaScript",
     "stars": 0,
@@ -706,7 +1177,7 @@ const REPOS = [
     "name": "domain",
     "fullName": "weepwood/domain",
     "description": "暂无描述",
-    "homepage": "https://domain-two.vercel.app",
+    "homepage": "https://domain-two.vercel.app/",
     "repo": "https://github.com/weepwood/domain",
     "language": "HTML",
     "stars": 0,
@@ -718,7 +1189,7 @@ const REPOS = [
     "name": "vue-communication",
     "fullName": "weepwood/vue-communication",
     "description": "暂无描述",
-    "homepage": "https://vue-communication-6jer.vercel.app",
+    "homepage": "https://vue-communication-6jer.vercel.app/",
     "repo": "https://github.com/weepwood/vue-communication",
     "language": "Vue",
     "stars": 0,
@@ -730,7 +1201,7 @@ const REPOS = [
     "name": "demo-mi-shop",
     "fullName": "weepwood/demo-mi-shop",
     "description": "暂无描述",
-    "homepage": "https://demo-mi-shop.vercel.app",
+    "homepage": "https://demo-mi-shop.vercel.app/",
     "repo": "https://github.com/weepwood/demo-mi-shop",
     "language": "HTML",
     "stars": 0,
@@ -742,7 +1213,7 @@ const REPOS = [
     "name": "webpack-docs",
     "fullName": "weepwood/webpack-docs",
     "description": "暂无描述",
-    "homepage": "https://webpack-docs-mu.vercel.app",
+    "homepage": "https://webpack-docs-mu.vercel.app/",
     "repo": "https://github.com/weepwood/webpack-docs",
     "language": null,
     "stars": 0,
@@ -754,7 +1225,7 @@ const REPOS = [
     "name": "shop-client2",
     "fullName": "weepwood/shop-client2",
     "description": "暂无描述",
-    "homepage": "https://shop-client2.vercel.app",
+    "homepage": "https://shop-client2.vercel.app/",
     "repo": "https://github.com/weepwood/shop-client2",
     "language": "Vue",
     "stars": 0,
@@ -766,7 +1237,7 @@ const REPOS = [
     "name": "HexoPage",
     "fullName": "weepwood/HexoPage",
     "description": "暂无描述",
-    "homepage": "https://halo.wang",
+    "homepage": "https://halo.wang/",
     "repo": "https://github.com/weepwood/HexoPage",
     "language": "Stylus",
     "stars": 0,
@@ -778,7 +1249,7 @@ const REPOS = [
     "name": "vitepress-fe-nav-main",
     "fullName": "weepwood/vitepress-fe-nav-main",
     "description": "暂无描述",
-    "homepage": "https://vitepress-fe-nav-main.vercel.app",
+    "homepage": "https://vitepress-fe-nav-main.vercel.app/",
     "repo": "https://github.com/weepwood/vitepress-fe-nav-main",
     "language": null,
     "stars": 0,
@@ -790,7 +1261,7 @@ const REPOS = [
     "name": "You-need-to-know-css-master",
     "fullName": "weepwood/You-need-to-know-css-master",
     "description": "暂无描述",
-    "homepage": "https://you-need-to-know-css-master.vercel.app",
+    "homepage": "https://you-need-to-know-css-master.vercel.app/",
     "repo": "https://github.com/weepwood/You-need-to-know-css-master",
     "language": "CSS",
     "stars": 0,
@@ -802,7 +1273,7 @@ const REPOS = [
     "name": "shop-client",
     "fullName": "weepwood/shop-client",
     "description": "暂无描述",
-    "homepage": "https://shop-client-eta.vercel.app",
+    "homepage": "https://shop-client-eta.vercel.app/",
     "repo": "https://github.com/weepwood/shop-client",
     "language": "Vue",
     "stars": 0,
@@ -814,7 +1285,7 @@ const REPOS = [
     "name": "weepwood-url-redirect",
     "fullName": "weepwood/weepwood-url-redirect",
     "description": "暂无描述",
-    "homepage": "https://weepwood-url-redirect.vercel.app",
+    "homepage": "https://weepwood-url-redirect.vercel.app/",
     "repo": "https://github.com/weepwood/weepwood-url-redirect",
     "language": "JavaScript",
     "stars": 0,
@@ -859,82 +1330,10 @@ const REPOS = [
     "host": "github.com/XiaoMiku01/fansMedalHelper"
   },
   {
-    "name": "weepwood-uiverse",
-    "fullName": "weepwood/weepwood-uiverse",
-    "description": "暂无描述",
-    "homepage": "weepwood-uiverse.vercel.app",
-    "repo": "https://github.com/weepwood/weepwood-uiverse",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-12-05",
-    "platform": "自定义",
-    "host": "weepwood-uiverse.vercel.app"
-  },
-  {
-    "name": "demo-todos",
-    "fullName": "weepwood/demo-todos",
-    "description": "暂无描述",
-    "homepage": "demo-todos.vercel.app",
-    "repo": "https://github.com/weepwood/demo-todos",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-12-03",
-    "platform": "自定义",
-    "host": "demo-todos.vercel.app"
-  },
-  {
-    "name": "demo-pomodoro-timer",
-    "fullName": "weepwood/demo-pomodoro-timer",
-    "description": "暂无描述",
-    "homepage": "demo-pomodoro-timer.vercel.app",
-    "repo": "https://github.com/weepwood/demo-pomodoro-timer",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-12-03",
-    "platform": "自定义",
-    "host": "demo-pomodoro-timer.vercel.app"
-  },
-  {
-    "name": "demo-todolist",
-    "fullName": "weepwood/demo-todolist",
-    "description": "暂无描述",
-    "homepage": "demo-todolist.vercel.app",
-    "repo": "https://github.com/weepwood/demo-todolist",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-12-02",
-    "platform": "自定义",
-    "host": "demo-todolist.vercel.app"
-  },
-  {
-    "name": "halo-ruoyi-admin",
-    "fullName": "weepwood/halo-ruoyi-admin",
-    "description": "暂无描述",
-    "homepage": "halo-ruoyi-admin.vercel.app",
-    "repo": "https://github.com/weepwood/halo-ruoyi-admin",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-05-12",
-    "platform": "自定义",
-    "host": "halo-ruoyi-admin.vercel.app"
-  },
-  {
-    "name": "YesPlayMusic",
-    "fullName": "weepwood/YesPlayMusic",
-    "description": "高颜值的第三方网易云播放器，支持 Windows / macOS / Linux :electron: ",
-    "homepage": "https://music.qier222.com",
-    "repo": "https://github.com/weepwood/YesPlayMusic",
-    "language": "Vue",
-    "stars": 0,
-    "updated": "2022-05-12",
-    "platform": "自定义",
-    "host": "music.qier222.com"
-  },
-  {
     "name": "NeteaseCloudMusicApi",
     "fullName": "weepwood/NeteaseCloudMusicApi",
     "description": "网易云音乐 Node.js API service",
-    "homepage": "https://neteasecloudmusicapi.vercel.app",
+    "homepage": "https://neteasecloudmusicapi.vercel.app/",
     "repo": "https://github.com/weepwood/NeteaseCloudMusicApi",
     "language": null,
     "stars": 0,
@@ -946,7 +1345,7 @@ const REPOS = [
     "name": "onedrive-vercel-index",
     "fullName": "weepwood/onedrive-vercel-index",
     "description": "OneDrive public directory listing, powered by Vercel and Next.js",
-    "homepage": "https://drive.swo.moe",
+    "homepage": "https://drive.swo.moe/",
     "repo": "https://github.com/weepwood/onedrive-vercel-index",
     "language": "TypeScript",
     "stars": 0,
@@ -955,34 +1354,22 @@ const REPOS = [
     "host": "drive.swo.moe"
   },
   {
-    "name": "halo-ruoyi-web",
-    "fullName": "weepwood/halo-ruoyi-web",
-    "description": "暂无描述",
-    "homepage": "halo-ruoyi-web.vercel.app",
-    "repo": "https://github.com/weepwood/halo-ruoyi-web",
+    "name": "YesPlayMusic",
+    "fullName": "weepwood/YesPlayMusic",
+    "description": "高颜值的第三方网易云播放器，支持 Windows / macOS / Linux :electron: ",
+    "homepage": "https://music.qier222.com/",
+    "repo": "https://github.com/weepwood/YesPlayMusic",
     "language": "Vue",
     "stars": 0,
     "updated": "2022-05-12",
     "platform": "自定义",
-    "host": "halo-ruoyi-web.vercel.app"
-  },
-  {
-    "name": "nuxtjs",
-    "fullName": "weepwood/nuxtjs",
-    "description": "暂无描述",
-    "homepage": "nuxtjs-lanqilu.vercel.app",
-    "repo": "https://github.com/weepwood/nuxtjs",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2022-05-12",
-    "platform": "自定义",
-    "host": "nuxtjs-lanqilu.vercel.app"
+    "host": "music.qier222.com"
   },
   {
     "name": "blog-1",
     "fullName": "weepwood/blog-1",
     "description": "基于SpringBoot + Vue 开发的前后端分离博客，采用SpringSecurity进行权限管理，ElasticSearch全文搜索，支持QQ、微博第三方登录、在线聊天、发布说说等功能。",
-    "homepage": "https://www.talkxj.com",
+    "homepage": "https://www.talkxj.com/",
     "repo": "https://github.com/weepwood/blog-1",
     "language": null,
     "stars": 0,
@@ -994,7 +1381,7 @@ const REPOS = [
     "name": "SpringBlade",
     "fullName": "weepwood/SpringBlade",
     "description": "SpringBlade 是一个由商业级项目升级优化而来的SpringCloud分布式微服务架构、SpringBoot单体式微服务架构并存的综合型项目，采用Java8 API重构了业务代码，完全遵循阿里巴巴编码规范。采用Spring Boot 2.4 、Spring Cloud 2020 、Mybatis 等核心技术，同时提供基于React和Vue的两个前端框架用于快速搭建企业级的SaaS多租户微服务平台。",
-    "homepage": "https://bladex.vip",
+    "homepage": "https://bladex.vip/",
     "repo": "https://github.com/weepwood/SpringBlade",
     "language": null,
     "stars": 0,
@@ -1027,75 +1414,278 @@ const REPOS = [
     "host": "srcrs.top/posts/202010191.html"
   }
 ];
+const LANG_COLORS = {
+  "JavaScript": "#f1e05a",
+  "TypeScript": "#3178c6",
+  "HTML": "#e34c26",
+  "CSS": "#563d7c",
+  "Vue": "#41b883",
+  "Python": "#3572A5",
+  "Java": "#b07219",
+  "Go": "#00ADD8",
+  "C": "#555555",
+  "C++": "#f34b7d",
+  "C#": "#178600",
+  "GDScript": "#355570",
+  "Shell": "#89e051",
+  "Rust": "#dea584",
+  "null": "#8b949e"
+};
+const ALL = "全部";
 
-const langColors = {"JavaScript":"#f1e05a","TypeScript":"#3178c6","HTML":"#e34c26","CSS":"#563d7c","Vue":"#41b883","Python":"#3572A5","Java":"#b07219","Go":"#00ADD8","C":"#555555","C++":"#f34b7d","C#":"#178600","GDScript":"#355570","Shell":"#89e051","Rust":"#dea584","null":"#8b949e"};
-const grid = document.getElementById("grid");
-const empty = document.getElementById("empty");
-const searchEl = document.getElementById("search");
-const platformChips = document.getElementById("platformChips");
-const langChips = document.getElementById("langChips");
+const elements = {
+  grid: document.getElementById("grid"),
+  empty: document.getElementById("empty"),
+  search: document.getElementById("search"),
+  platform: document.getElementById("platformFilter"),
+  language: document.getElementById("languageFilter"),
+  sort: document.getElementById("sortBy"),
+  reset: document.getElementById("resetFilters"),
+  totalCount: document.getElementById("totalCount"),
+  resultSummary: document.getElementById("resultSummary"),
+  activeSummary: document.getElementById("activeSummary"),
+  themeToggle: document.getElementById("themeToggle"),
+};
 
-let activePlatform = "全部";
-let activeLang = "全部";
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
 
-document.getElementById("count").textContent = REPOS.length;
-
-const platforms = ["全部", ...Array.from(new Set(REPOS.map(r => r.platform)))];
-const langs = ["全部", ...Array.from(new Set(REPOS.map(r => r.language || "其他").filter(Boolean)))];
-
-function renderChips(container, values, active) {
-  container.innerHTML = "";
-  values.forEach(v => {
-    const c = document.createElement("span");
-    c.className = "chip" + (v === active ? " active" : "");
-    c.textContent = v;
-    c.addEventListener("click", () => {
-      if (container === platformChips) activePlatform = v;
-      else activeLang = v;
-      renderAll();
-    });
-    container.appendChild(c);
-  });
+function createElement(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
 }
 
-function renderAll() {
-  renderChips(platformChips, platforms, activePlatform);
-  renderChips(langChips, langs, activeLang);
-  renderGrid();
+function externalLink(url, className, text, label) {
+  const link = createElement("a", className, text);
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  if (label) link.setAttribute("aria-label", label);
+  return link;
 }
 
-function renderGrid() {
-  const q = searchEl.value.trim().toLowerCase();
-  const list = REPOS.filter(r => {
-    const matchP = activePlatform === "全部" || r.platform === activePlatform;
-    const matchL = activeLang === "全部" || (r.language || "其他") === activeLang;
-    const matchQ = !q || r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || (r.language || "").toLowerCase().includes(q);
-    return matchP && matchL && matchQ;
-  });
-  grid.innerHTML = "";
-  empty.style.display = list.length ? "none" : "block";
-  list.forEach(r => {
-    const color = langColors[r.language] || langColors.null;
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3><a href="${r.repo}" target="_blank" rel="noopener">${r.name}</a></h3>
-      <p class="desc">${r.description}</p>
-      <div class="tags">
-        <span class="tag"><span class="dot" style="background:${color}"></span>${r.language || "其他"}</span>
-        <span class="plat">${r.platform}</span>
-        <span class="tag">★ ${r.stars}</span>
-      </div>
-      <div class="actions">
-        <a class="btn demo" href="${r.homepage}" target="_blank" rel="noopener">在线演示</a>
-        <a class="btn code" href="${r.repo}" target="_blank" rel="noopener">源码</a>
-      </div>`;
-    grid.appendChild(card);
-  });
+function formatDate(value) {
+  if (!value) return "未知";
+  const date = new Date(value + "T00:00:00Z");
+  return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
 }
 
-searchEl.addEventListener("input", renderGrid);
-renderAll();
+function fillSelect(select, values, label) {
+  const fragment = document.createDocumentFragment();
+  [ALL, ...values].forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value === ALL ? "全部" + label : value;
+    fragment.appendChild(option);
+  });
+  select.replaceChildren(fragment);
+}
+
+function readState() {
+  const params = new URLSearchParams(location.search);
+  return {
+    query: params.get("q") || "",
+    platform: params.get("platform") || ALL,
+    language: params.get("language") || ALL,
+    sort: ["updated", "stars", "name"].includes(params.get("sort"))
+      ? params.get("sort")
+      : "updated",
+  };
+}
+
+function writeState() {
+  const params = new URLSearchParams();
+  const query = elements.search.value.trim();
+
+  if (query) params.set("q", query);
+  if (elements.platform.value !== ALL) params.set("platform", elements.platform.value);
+  if (elements.language.value !== ALL) params.set("language", elements.language.value);
+  if (elements.sort.value !== "updated") params.set("sort", elements.sort.value);
+
+  const nextUrl = params.size ? "?" + params.toString() : location.pathname;
+  history.replaceState(null, "", nextUrl);
+}
+
+function createMetadataItem(text, dotColor) {
+  const item = createElement("span", "metadata-item");
+  if (dotColor) {
+    const dot = createElement("span", "language-dot");
+    dot.style.backgroundColor = dotColor;
+    dot.setAttribute("aria-hidden", "true");
+    item.appendChild(dot);
+  }
+  item.appendChild(document.createTextNode(text));
+  return item;
+}
+
+function createCard(repo) {
+  const card = createElement("article", "card");
+
+  const head = createElement("div", "card-head");
+  const titleGroup = createElement("div");
+  const title = createElement("h2");
+  title.appendChild(externalLink(repo.repo, "", repo.name, "打开 " + repo.name + " 的 GitHub 仓库"));
+  titleGroup.appendChild(title);
+  titleGroup.appendChild(createElement("p", "host", repo.host));
+  head.appendChild(titleGroup);
+  head.appendChild(createElement("span", "platform", repo.platform));
+
+  const description = createElement("p", "description", repo.description);
+
+  const metadata = createElement("div", "metadata");
+  metadata.appendChild(
+    createMetadataItem(
+      repo.language || "其他",
+      LANG_COLORS[repo.language] || LANG_COLORS.null,
+    ),
+  );
+  metadata.appendChild(createMetadataItem("★ " + repo.stars));
+  metadata.appendChild(createMetadataItem("更新于 " + formatDate(repo.updated)));
+
+  const actions = createElement("div", "actions");
+  actions.appendChild(
+    externalLink(repo.homepage, "button primary", "在线演示 ↗", "打开 " + repo.name + " 在线演示"),
+  );
+  actions.appendChild(
+    externalLink(repo.repo, "button", "查看源码", "打开 " + repo.name + " 源码"),
+  );
+
+  card.append(head, description, metadata, actions);
+  return card;
+}
+
+function getFilteredRepos() {
+  const query = elements.search.value.trim().toLocaleLowerCase("zh-CN");
+  const platform = elements.platform.value;
+  const language = elements.language.value;
+  const sort = elements.sort.value;
+
+  const result = REPOS.filter((repo) => {
+    const searchable = [
+      repo.name,
+      repo.fullName,
+      repo.description,
+      repo.language || "",
+      repo.platform,
+      repo.host,
+    ]
+      .join(" ")
+      .toLocaleLowerCase("zh-CN");
+
+    return (
+      (!query || searchable.includes(query)) &&
+      (platform === ALL || repo.platform === platform) &&
+      (language === ALL || (repo.language || "其他") === language)
+    );
+  });
+
+  result.sort((a, b) => {
+    if (sort === "stars") {
+      return b.stars - a.stars || b.updated.localeCompare(a.updated);
+    }
+    if (sort === "name") {
+      return a.name.localeCompare(b.name, "zh-CN");
+    }
+    return b.updated.localeCompare(a.updated) || a.name.localeCompare(b.name, "zh-CN");
+  });
+
+  return result;
+}
+
+function render() {
+  const repos = getFilteredRepos();
+  const fragment = document.createDocumentFragment();
+
+  repos.forEach((repo) => fragment.appendChild(createCard(repo)));
+  elements.grid.replaceChildren(fragment);
+  elements.empty.style.display = repos.length ? "none" : "block";
+  elements.grid.hidden = repos.length === 0;
+
+  elements.resultSummary.textContent =
+    "显示 " + repos.length + " / " + REPOS.length + " 个项目";
+
+  const active = [];
+  if (elements.platform.value !== ALL) active.push(elements.platform.value);
+  if (elements.language.value !== ALL) active.push(elements.language.value);
+  if (elements.search.value.trim()) active.push("关键词：" + elements.search.value.trim());
+  elements.activeSummary.textContent = active.join(" · ");
+
+  writeState();
+}
+
+function resetFilters() {
+  elements.search.value = "";
+  elements.platform.value = ALL;
+  elements.language.value = ALL;
+  elements.sort.value = "updated";
+  render();
+  elements.search.focus();
+}
+
+function applyTheme(theme) {
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.dataset.theme = theme;
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+
+  const isDark =
+    document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme &&
+      matchMedia("(prefers-color-scheme: dark)").matches);
+
+  elements.themeToggle.textContent = isDark ? "☀" : "☾";
+  elements.themeToggle.setAttribute(
+    "aria-label",
+    isDark ? "切换浅色模式" : "切换深色模式",
+  );
+}
+
+function toggleTheme() {
+  const isDark =
+    document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme &&
+      matchMedia("(prefers-color-scheme: dark)").matches);
+  const nextTheme = isDark ? "light" : "dark";
+  localStorage.setItem("theme", nextTheme);
+  applyTheme(nextTheme);
+}
+
+const platforms = [...new Set(REPOS.map((repo) => repo.platform))].sort((a, b) =>
+  a.localeCompare(b, "zh-CN"),
+);
+const languages = [
+  ...new Set(REPOS.map((repo) => repo.language || "其他")),
+].sort((a, b) => a.localeCompare(b, "zh-CN"));
+
+fillSelect(elements.platform, platforms, "平台");
+fillSelect(elements.language, languages, "语言");
+elements.totalCount.textContent = String(REPOS.length);
+
+const initialState = readState();
+elements.search.value = initialState.query;
+elements.platform.value = platforms.includes(initialState.platform)
+  ? initialState.platform
+  : ALL;
+elements.language.value = languages.includes(initialState.language)
+  ? initialState.language
+  : ALL;
+elements.sort.value = initialState.sort;
+
+elements.search.addEventListener("input", render);
+elements.platform.addEventListener("change", render);
+elements.language.addEventListener("change", render);
+elements.sort.addEventListener("change", render);
+elements.reset.addEventListener("click", resetFilters);
+elements.themeToggle.addEventListener("click", toggleTheme);
+
+applyTheme(localStorage.getItem("theme"));
+render();
 </script>
 </body>
 </html>
