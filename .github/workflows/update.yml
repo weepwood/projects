@@ -3,11 +3,23 @@ name: Update project list
 # 自动把 weepwood 仓库中设置了 Website(homepage) 的项目聚合进 index.html
 on:
   schedule:
-    - cron: "23 */6 * * *"   # 每 6 小时检查一次；有新项目设了 Website 就会被收进页面
-  workflow_dispatch: {}      # 也可在 Actions 页面手动 "Run workflow" 立即更新
+    - cron: "23 */6 * * *"   # 每 6 小时检查一次
+  push:
+    branches:
+      - main
+    paths:
+      - "gen.js"
+      - "package.json"
+      - "tests/**"
+      - ".github/workflows/update.yml"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
+
+concurrency:
+  group: update-project-list
+  cancel-in-progress: false
 
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -15,6 +27,7 @@ env:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -22,47 +35,70 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Validate generator
+        run: npm test
+
       # 拉取仓库列表（分页，确保超过 100 个仓库时也不会遗漏）
-      # 配置了 secrets.GH_TOKEN（含 repo 权限的 PAT）时可同时收录私有仓库
+      # 配置 secrets.GH_TOKEN（含 repo 权限的 PAT）时可同时收录私有仓库
       - name: Fetch repos
+        shell: bash
         run: |
-          if [ -n "$GH_TOKEN" ]; then
+          set -euo pipefail
+
+          if [ -n "${GH_TOKEN:-}" ]; then
             gh api --paginate "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
           else
             python3 - <<'PY'
-          import json, urllib.request
+          import json
+          import urllib.request
+
           url = "https://api.github.com/users/weepwood/repos?per_page=100&sort=updated"
           all_repos = []
+
           while url:
-              req = urllib.request.Request(url, headers={"User-Agent": "github-actions", "Accept": "application/vnd.github+json"})
-              with urllib.request.urlopen(req) as r:
-                  all_repos.extend(json.loads(r.read().decode()))
-                  link = r.headers.get("Link", "")
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "User-Agent": "github-actions",
+                      "Accept": "application/vnd.github+json",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  all_repos.extend(json.loads(response.read().decode()))
+                  link = response.headers.get("Link", "")
                   url = None
                   for part in link.split(","):
                       if 'rel="next"' in part:
                           url = part[part.index("<") + 1:part.index(">")]
-          with open("repos_raw.json", "w") as f:
-              json.dump(all_repos, f)
+                          break
+
+          with open("repos_raw.json", "w", encoding="utf-8") as output:
+              json.dump(all_repos, output, ensure_ascii=False)
+
           print("fetched", len(all_repos), "public repos")
           PY
           fi
 
       - name: Regenerate page
-        run: node gen.js
+        run: npm run generate
 
       # 没有 GH_TOKEN 时只做公开仓库（会漏掉私有仓库的演示网址），
-      # 为避免覆盖已手动收录的私有仓库演示，这里不推送，只提示。
-      - name: Commit & push if changed
+      # 为避免覆盖已收录的私有仓库演示，这里不推送，只提示。
+      - name: Commit and push if changed
+        shell: bash
         run: |
-          if [ -z "$GH_TOKEN" ]; then
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
             echo "GH_TOKEN 未配置：为避免丢失私有仓库的演示网址，本次不推送。"
-            echo "如需完整自动更新（含私有仓库），请在仓库 Settings → Secrets 中添加 GH_TOKEN（具备 repo 权限的个人访问令牌）。"
+            echo "如需完整自动更新，请添加具备 repo 权限的 GH_TOKEN。"
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html projects_data.json
+
           if git diff --cached --quiet; then
             echo "No changes to project list."
           else
