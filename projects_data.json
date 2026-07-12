@@ -1,5 +1,29 @@
 [
   {
+    "name": "Asset-Management-Calculator",
+    "fullName": "weepwood/Asset-Management-Calculator",
+    "description": "网页版资产管理计算器，提供可视化财务计算与数据分析",
+    "homepage": "https://asset-management-calculator.netlify.app/",
+    "repo": "https://github.com/weepwood/Asset-Management-Calculator",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-12",
+    "platform": "Netlify",
+    "host": "asset-management-calculator.netlify.app"
+  },
+  {
+    "name": "blog-system",
+    "fullName": "weepwood/blog-system",
+    "description": "全栈博客系统（React + Express + Supabase），支持 Markdown 编辑与评论",
+    "homepage": "https://blog-system-frontend-rho.vercel.app/",
+    "repo": "https://github.com/weepwood/blog-system",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-12",
+    "platform": "Vercel",
+    "host": "blog-system-frontend-rho.vercel.app"
+  },
+  {
     "name": "s2u",
     "fullName": "weepwood/s2u",
     "description": "将 URL Scheme 或任意网址转换为 HTTP 跳转链接的在线工具",
@@ -250,18 +274,6 @@
     "updated": "2026-07-09",
     "platform": "Netlify",
     "host": "arkpoints-120.netlify.app"
-  },
-  {
-    "name": "blog-system",
-    "fullName": "weepwood/blog-system",
-    "description": "全栈博客系统（React + Express + Supabase），支持 Markdown 编辑与评论",
-    "homepage": "https://blog-system-frontend-rho.vercel.app/",
-    "repo": "https://github.com/weepwood/blog-system",
-    "language": "TypeScript",
-    "stars": 0,
-    "updated": "2026-07-09",
-    "platform": "Vercel",
-    "host": "blog-system-frontend-rho.vercel.app"
   },
   {
     "name": "board-games",
