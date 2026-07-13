@@ -1,5 +1,17 @@
 [
   {
+    "name": "glass-cup-3d",
+    "fullName": "weepwood/glass-cup-3d",
+    "description": "3D 透明玻璃杯",
+    "homepage": "https://glass-cup-3d.netlify.app/",
+    "repo": "https://github.com/weepwood/glass-cup-3d",
+    "language": "JavaScript",
+    "stars": 0,
+    "updated": "2026-07-13",
+    "platform": "Netlify",
+    "host": "glass-cup-3d.netlify.app"
+  },
+  {
     "name": "Asset-Management-Calculator",
     "fullName": "weepwood/Asset-Management-Calculator",
     "description": "网页版资产管理计算器，提供可视化财务计算与数据分析",
