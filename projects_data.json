@@ -1,5 +1,17 @@
 [
   {
+    "name": "build-showcase-website",
+    "fullName": "weepwood/build-showcase-website",
+    "description": "中国独立开发者项目列表 - Showcase Website",
+    "homepage": "https://build-showcase-website.netlify.app/",
+    "repo": "https://github.com/weepwood/build-showcase-website",
+    "language": "TypeScript",
+    "stars": 0,
+    "updated": "2026-07-14",
+    "platform": "Netlify",
+    "host": "build-showcase-website.netlify.app"
+  },
+  {
     "name": "glass-cup-3d",
     "fullName": "weepwood/glass-cup-3d",
     "description": "3D 透明玻璃杯",
