@@ -1,5 +1,17 @@
 [
   {
+    "name": "feralui",
+    "fullName": "weepwood/feralui",
+    "description": "暂无描述",
+    "homepage": "https://tourmaline-daifuku-47a200.netlify.app/",
+    "repo": "https://github.com/weepwood/feralui",
+    "language": "CSS",
+    "stars": 0,
+    "updated": "2026-07-15",
+    "platform": "Netlify",
+    "host": "tourmaline-daifuku-47a200.netlify.app"
+  },
+  {
     "name": "build-showcase-website",
     "fullName": "weepwood/build-showcase-website",
     "description": "中国独立开发者项目列表 - Showcase Website",
