@@ -54,10 +54,19 @@ jobs:
             covers
             enrichment_cache.json
             health_data.json
+            health_history.json
             screenshot_state.json
           key: projects-automation-${{ runner.os }}-${{ github.run_id }}
           restore-keys: |
             projects-automation-${{ runner.os }}-
+
+      - name: Restore deployed history fallback
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          if [ ! -s health_history.json ]; then
+            curl -fsSL https://weepwood.github.io/projects/health_history.json -o health_history.json || true
+          fi
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -105,7 +114,7 @@ jobs:
           set -euo pipefail
           rm -rf dist
           mkdir -p dist
-          cp index.html projects_data.json automation_report.json dist/
+          cp index.html status.html history.html projects_data.json automation_report.json health_data.json health_history.json dist/
           if [ -d covers ]; then cp -R covers dist/covers; fi
           touch dist/.nojekyll
 
@@ -127,6 +136,7 @@ jobs:
             covers
             enrichment_cache.json
             health_data.json
+            health_history.json
             screenshot_state.json
           key: projects-automation-${{ runner.os }}-${{ github.run_id }}
 
