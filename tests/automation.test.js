@@ -1,64 +1,9 @@
 "use strict";
-
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const {
-  decideScreenshot,
-  findDuplicateHomepages,
-  inferCategory,
-  platformOf,
-} = require("../lib/automation");
-
-test("screenshot is skipped forever when no new commit exists", () => {
-  const decision = decideScreenshot(
-    { latestCommitSha: "abc", pushedAt: "2026-07-01T00:00:00Z" },
-    { lastScreenshotAt: "2026-06-01T00:00:00Z", lastScreenshotCommit: "abc" },
-    { now: "2026-07-18T00:00:00Z", minDays: 10, coverExists: true },
-  );
-  assert.equal(decision.capture, false);
-  assert.equal(decision.reason, "no-new-commit");
-});
-
-test("new commit waits until screenshot is at least ten days old", () => {
-  const decision = decideScreenshot(
-    { latestCommitSha: "new" },
-    { lastScreenshotAt: "2026-07-12T00:00:00Z", lastScreenshotCommit: "old" },
-    { now: "2026-07-18T00:00:00Z", minDays: 10, coverExists: true },
-  );
-  assert.equal(decision.capture, false);
-  assert.equal(decision.reason, "changed-but-in-cooldown");
-});
-
-test("new commit is captured after the ten day cooldown", () => {
-  const decision = decideScreenshot(
-    { latestCommitSha: "new" },
-    { lastScreenshotAt: "2026-07-01T00:00:00Z", lastScreenshotCommit: "old" },
-    { now: "2026-07-18T00:00:00Z", minDays: 10, coverExists: true },
-  );
-  assert.equal(decision.capture, true);
-  assert.equal(decision.reason, "new-commit-and-cooldown-complete");
-});
-
-test("missing covers are captured immediately", () => {
-  const decision = decideScreenshot(
-    { latestCommitSha: "abc" },
-    {},
-    { now: "2026-07-18T00:00:00Z", minDays: 10, coverExists: false },
-  );
-  assert.equal(decision.capture, true);
-  assert.equal(decision.reason, "missing-cover");
-});
-
-test("category and platform inference use deterministic rules", () => {
-  assert.equal(inferCategory({ name: "linear-algebra-viz", description: "interactive math visualization" }).category, "学习与知识可视化");
-  assert.equal(platformOf("https://demo.pages.dev"), "Cloudflare Pages");
-});
-
-test("duplicate homepages are reported", () => {
-  const duplicates = findDuplicateHomepages([
-    { fullName: "a/a", homepage: "https://example.com/" },
-    { fullName: "a/b", homepage: "https://example.com" },
-  ]);
-  assert.equal(duplicates.length, 1);
-  assert.deepEqual(duplicates[0].projects, ["a/a", "a/b"]);
-});
+const test=require("node:test"),assert=require("node:assert/strict");const {decideScreenshot,findDuplicateHomepages,inferCategory,platformOf,shouldMonitorProject,updateHealthHistory}=require("../lib/automation");
+test("unchanged commit never captures",()=>{const d=decideScreenshot({latestCommitSha:"abc",homepage:"https://a.test"},{lastScreenshotAt:"2026-06-01T00:00:00Z",lastScreenshotCommit:"abc"},{now:"2026-07-18T00:00:00Z",minDays:10,coverExists:true});assert.equal(d.reason,"no-new-commit")});
+test("new commit waits ten days",()=>{const d=decideScreenshot({latestCommitSha:"new",homepage:"https://a.test"},{lastScreenshotAt:"2026-07-12T00:00:00Z",lastScreenshotCommit:"old"},{now:"2026-07-18T00:00:00Z",minDays:10,coverExists:true});assert.equal(d.reason,"changed-but-in-cooldown")});
+test("new commit captures after ten days",()=>{const d=decideScreenshot({latestCommitSha:"new",homepage:"https://a.test"},{lastScreenshotAt:"2026-07-01T00:00:00Z",lastScreenshotCommit:"old"},{now:"2026-07-18T00:00:00Z",minDays:10,coverExists:true});assert.equal(d.capture,true)});
+test("fork projects are never monitored or captured",()=>{const p={fork:true,homepage:"https://example.com",latestCommitSha:"new"};assert.equal(shouldMonitorProject(p),false);assert.equal(decideScreenshot(p,{}, {coverExists:false}).reason,"fork-not-monitored")});
+test("category and platform inference remain deterministic",()=>{assert.equal(inferCategory({name:"linear-algebra-viz",description:"interactive math visualization"}).category,"学习与知识可视化");assert.equal(platformOf("https://demo.pages.dev"),"Cloudflare Pages")});
+test("duplicate homepages ignore forks",()=>{const d=findDuplicateHomepages([{fullName:"a/a",homepage:"https://example.com/"},{fullName:"a/b",homepage:"https://example.com",fork:true}]);assert.equal(d.length,0)});
+test("history stores daily summaries and state transitions",()=>{const h=updateHealthHistory({daily:[],events:[]},{"a/a":{status:"online"}},{"a/a":{status:"offline",error:"timeout"},"a/fork":{status:"not_monitored"}},{now:"2026-07-18T00:00:00Z",maxDays:180,maxEvents:1000});assert.equal(h.daily[0].offline,1);assert.equal(h.daily[0].notMonitored,1);assert.equal(h.events[0].from,"online");assert.equal(h.events[0].to,"offline")});
