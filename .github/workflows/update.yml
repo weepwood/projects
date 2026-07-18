@@ -3,6 +3,15 @@ name: Update and deploy project directory
 on:
   schedule:
     - cron: "23 */6 * * *"
+  pull_request:
+    branches: [main]
+    paths:
+      - "automation.config.json"
+      - "lib/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - ".github/workflows/update.yml"
   push:
     branches: [main]
     paths:
@@ -73,17 +82,18 @@ jobs:
         run: npm run screenshots:plan
 
       - name: Install Chromium only when screenshots are due
-        if: steps.screenshot-plan.outputs.count != '0'
+        if: github.event_name != 'pull_request' && steps.screenshot-plan.outputs.count != '0'
         run: npx playwright install --with-deps chromium
 
       - name: Capture due screenshots
-        if: steps.screenshot-plan.outputs.count != '0'
+        if: github.event_name != 'pull_request' && steps.screenshot-plan.outputs.count != '0'
         run: npm run screenshots:capture
 
       - name: Check project health
         run: npm run health
 
       - name: Synchronize offline issues
+        if: github.event_name != 'pull_request'
         run: npm run issues:sync
 
       - name: Build static site
@@ -100,15 +110,17 @@ jobs:
           touch dist/.nojekyll
 
       - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
       - name: Save automation state and screenshots
-        if: always()
+        if: github.event_name != 'pull_request' && always()
         uses: actions/cache/save@v4
         with:
           path: |
@@ -119,6 +131,7 @@ jobs:
           key: projects-automation-${{ runner.os }}-${{ github.run_id }}
 
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
