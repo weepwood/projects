@@ -1,33 +1,36 @@
-name: Update project list
+name: Update and deploy project directory
 
-# 自动把 weepwood 仓库中设置了 Website(homepage) 的项目聚合进 index.html
 on:
   schedule:
-    - cron: "23 */6 * * *"   # 每 6 小时检查一次
+    - cron: "23 */6 * * *"
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "gen.js"
-      - "package.json"
+      - "automation.config.json"
+      - "lib/**"
+      - "scripts/**"
       - "tests/**"
+      - "package.json"
       - ".github/workflows/update.yml"
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+  issues: write
 
 concurrency:
-  group: update-project-list
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -35,73 +38,93 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Validate generator
+      - name: Restore automation state and screenshots
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            covers
+            enrichment_cache.json
+            health_data.json
+            screenshot_state.json
+          key: projects-automation-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            projects-automation-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run tests
         run: npm test
 
-      # 拉取仓库列表（分页，确保超过 100 个仓库时也不会遗漏）
-      # 配置 secrets.GH_TOKEN（含 repo 权限的 PAT）时可同时收录私有仓库
-      - name: Fetch repos
+      - name: Fetch public repositories
         shell: bash
         run: |
           set -euo pipefail
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "users/weepwood/repos?per_page=100&sort=updated&type=owner" > repos_raw.json
 
-          if [ -n "${GH_TOKEN:-}" ]; then
-            gh api --paginate "user/repos?per_page=100&sort=updated&affiliation=owner" > repos_raw.json
-          else
-            python3 - <<'PY'
-          import json
-          import urllib.request
+      - name: Enrich and classify projects
+        run: npm run enrich
 
-          url = "https://api.github.com/users/weepwood/repos?per_page=100&sort=updated"
-          all_repos = []
+      - name: Plan screenshots
+        id: screenshot-plan
+        run: npm run screenshots:plan
 
-          while url:
-              request = urllib.request.Request(
-                  url,
-                  headers={
-                      "User-Agent": "github-actions",
-                      "Accept": "application/vnd.github+json",
-                  },
-              )
-              with urllib.request.urlopen(request, timeout=30) as response:
-                  all_repos.extend(json.loads(response.read().decode()))
-                  link = response.headers.get("Link", "")
-                  url = None
-                  for part in link.split(","):
-                      if 'rel="next"' in part:
-                          url = part[part.index("<") + 1:part.index(">")]
-                          break
+      - name: Install Chromium only when screenshots are due
+        if: steps.screenshot-plan.outputs.count != '0'
+        run: npx playwright install --with-deps chromium
 
-          with open("repos_raw.json", "w", encoding="utf-8") as output:
-              json.dump(all_repos, output, ensure_ascii=False)
+      - name: Capture due screenshots
+        if: steps.screenshot-plan.outputs.count != '0'
+        run: npm run screenshots:capture
 
-          print("fetched", len(all_repos), "public repos")
-          PY
-          fi
+      - name: Check project health
+        run: npm run health
 
-      - name: Regenerate page
+      - name: Synchronize offline issues
+        run: npm run issues:sync
+
+      - name: Build static site
         run: npm run generate
 
-      # 没有 GH_TOKEN 时只做公开仓库（会漏掉私有仓库的演示网址），
-      # 为避免覆盖已收录的私有仓库演示，这里不推送，只提示。
-      - name: Commit and push if changed
+      - name: Prepare Pages artifact
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf dist
+          mkdir -p dist
+          cp index.html projects_data.json automation_report.json dist/
+          if [ -d covers ]; then cp -R covers dist/covers; fi
+          touch dist/.nojekyll
 
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "GH_TOKEN 未配置：为避免丢失私有仓库的演示网址，本次不推送。"
-            echo "如需完整自动更新，请添加具备 repo 权限的 GH_TOKEN。"
-            exit 0
-          fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html projects_data.json
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
-          if git diff --cached --quiet; then
-            echo "No changes to project list."
-          else
-            git commit -m "chore: auto-update project list"
-            git push
-          fi
+      - name: Save automation state and screenshots
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            covers
+            enrichment_cache.json
+            health_data.json
+            screenshot_state.json
+          key: projects-automation-${{ runner.os }}-${{ github.run_id }}
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

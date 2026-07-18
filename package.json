@@ -1,11 +1,20 @@
 {
   "name": "weepwood-project-gallery",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Static GitHub project demo aggregation page",
+  "description": "Automated GitHub project discovery, enrichment, screenshots, health monitoring and static publishing",
   "scripts": {
-    "generate": "node gen.js",
+    "enrich": "node scripts/enrich-projects.js",
+    "health": "node scripts/check-health.js",
+    "issues:sync": "node scripts/sync-offline-issues.js",
+    "screenshots:plan": "node scripts/capture-screenshots.js --plan",
+    "screenshots:capture": "node scripts/capture-screenshots.js",
+    "generate": "node scripts/build-site.js",
+    "build": "npm run enrich && npm run health && npm run generate",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "playwright": "^1.54.1"
   },
   "engines": {
     "node": ">=20"

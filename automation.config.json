@@ -1,0 +1,12 @@
+{
+  "owner": "weepwood",
+  "screenshotMinDays": 10,
+  "maxScreenshotsPerRun": 8,
+  "screenshotFailureRetryHours": 24,
+  "healthTimeoutMs": 12000,
+  "healthConcurrency": 8,
+  "enrichmentConcurrency": 5,
+  "featuredCount": 6,
+  "exclude": [],
+  "overrides": {}
+}
