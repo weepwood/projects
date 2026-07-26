@@ -1,0 +1,200 @@
+schema_version: 1
+owner: weepwood
+reviewed_at: 2026-07-26
+
+policy:
+  preferred_default_branch: main
+  preferred_merge_method: squash
+  delete_branch_after_merge: true
+  direct_push_to_default_branch: false
+  archive_requires_manual_review: true
+  history_rewrite_requires_explicit_approval: true
+
+projects:
+  - repo: weepwood/MRR
+    tier: S
+    status: active
+    kind: production
+    visibility: private
+    default_branch: main
+    data_risk: critical
+    governance: strict
+    notes: 医疗病案与影像管理系统，正式部署并涉及敏感数据。
+
+  - repo: weepwood/ATab
+    tier: A
+    status: developing
+    kind: product
+    visibility: public
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: 浏览器标签页、书签、会话、AI 与云同步产品。
+
+  - repo: weepwood/LocalLens
+    tier: A
+    status: developing
+    kind: product
+    visibility: public
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: 本地照片与视频管理产品，包含本地索引和设备连接能力。
+
+  - repo: weepwood/PacketLens
+    tier: A
+    status: developing
+    kind: product
+    visibility: public
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: Windows 原生网络抓包与协议分析工具。
+
+  - repo: weepwood/AuditKit
+    tier: A
+    status: developing
+    kind: product
+    visibility: public
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: 审计、可观测性与工程治理工具。
+
+  - repo: weepwood/r2-web
+    tier: A
+    status: active
+    kind: product
+    visibility: public
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: Cloudflare R2 多 Bucket 文件管理工具。
+
+  - repo: weepwood/weepwood-note
+    tier: A
+    status: active
+    kind: knowledge-base
+    visibility: private
+    default_branch: main
+    data_risk: medium
+    governance: standard
+    notes: Obsidian 知识库；需单独治理大文件、附件和历史体积。
+
+  - repo: weepwood/projects
+    tier: A
+    status: active
+    kind: portfolio-governance
+    visibility: public
+    default_branch: main
+    data_risk: low
+    governance: standard
+    notes: 项目目录、站点健康检查与项目组合治理中心。
+
+  - repo: weepwood/s2u
+    tier: B
+    status: maintenance
+    kind: tool
+    visibility: public
+    default_branch: master
+    data_risk: low
+    governance: lightweight
+    notes: 链接生成、跳转与历史记录小工具；后续维护时再迁移默认分支。
+
+  - repo: weepwood/emoji-collision
+    tier: B
+    status: maintenance
+    kind: showcase
+    visibility: public
+    default_branch: main
+    data_risk: low
+    governance: lightweight
+    notes: Emoji 像素物理碰撞展示项目。
+
+review_queue:
+  - repo: weepwood/admin-dashboard
+    proposed_tier: Archive
+    proposed_status: archive-candidate
+    reason: 当前仓库大小为 0，需确认是否为空仓库或预留项目。
+    action: inspect-before-archive
+
+  - repo: weepwood/article-share
+    proposed_tier: Archive
+    proposed_status: archive-candidate
+    reason: 当前仓库大小为 0，需确认是否仍有外部用途。
+    action: inspect-before-archive
+
+  - repo: weepwood/dida-app
+    proposed_tier: Archive
+    proposed_status: archive-candidate
+    reason: 当前仓库大小为 0，需确认是否仍有开发计划。
+    action: inspect-before-archive
+
+  - repo: weepwood/ChatGPT-Web
+    proposed_tier: Mirror
+    proposed_status: paused
+    reason: 与 chatgpt-web-1、ChatGPT-Web-2 名称和体积接近，需确认正式版本与上游关系。
+    action: identify-canonical-repository
+
+  - repo: weepwood/chatgpt-web-1
+    proposed_tier: Archive
+    proposed_status: archive-candidate
+    reason: 与同名系列仓库高度相似，需确认是否为公开副本。
+    action: identify-canonical-repository
+
+  - repo: weepwood/ChatGPT-Web-2
+    proposed_tier: Archive
+    proposed_status: archive-candidate
+    reason: 与同名系列仓库高度相似，需确认是否仍有独立用途。
+    action: identify-canonical-repository
+
+  - repo: weepwood/demo-todolist
+    proposed_tier: Lab
+    proposed_status: archive-candidate
+    reason: 与 demo-todos 目标可能重复，适合归档或合并到前端实验仓库。
+    action: compare-and-consolidate
+
+  - repo: weepwood/demo-todos
+    proposed_tier: Lab
+    proposed_status: archive-candidate
+    reason: 与 demo-todolist 目标可能重复，适合归档或合并到前端实验仓库。
+    action: compare-and-consolidate
+
+manual_settings_queue:
+  - repo: weepwood/MRR
+    priority: P0
+    actions:
+      - confirm-default-branch-ruleset
+      - require-status-checks
+      - require-conversation-resolution
+      - block-force-push
+      - block-default-branch-deletion
+
+  - repo: weepwood/ATab
+    priority: P1
+    actions:
+      - add-product-agents-guide
+      - limit-stacked-pr-depth
+      - confirm-default-branch-ruleset
+      - prefer-squash-merge
+
+  - repo: weepwood/LocalLens
+    priority: P1
+    actions:
+      - add-product-agents-guide
+      - confirm-default-branch-ruleset
+      - prefer-squash-merge
+
+  - repo: weepwood/PacketLens
+    priority: P1
+    actions:
+      - add-product-agents-guide
+      - confirm-default-branch-ruleset
+      - prefer-squash-merge
+
+  - repo: weepwood/weepwood-note
+    priority: P1
+    actions:
+      - audit-large-git-objects
+      - define-attachment-policy
+      - confirm-default-branch-ruleset
