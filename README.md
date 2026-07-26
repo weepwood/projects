@@ -10,6 +10,19 @@
 - `/status.html`：当前状态、HTTP 状态码、响应时间和最后检查时间。
 - `/history.html`：最近 180 天每日汇总和最近 1000 条状态变化事件。
 
+## 项目组合治理
+
+本仓库同时作为 `weepwood` 名下 GitHub 仓库的项目组合治理中心：
+
+- [`governance/README.md`](governance/README.md)：项目分级、生命周期和治理原则；
+- [`governance/projects.yml`](governance/projects.yml)：机器可读的项目等级、状态和实施队列；
+- [`governance/repository-settings-checklist.md`](governance/repository-settings-checklist.md)：Ruleset、合并策略与归档复核清单；
+- [`governance/templates/AGENTS-product.md`](governance/templates/AGENTS-product.md)：持续开发产品的 AI 协作模板；
+- [`governance/templates/AGENTS-tool.md`](governance/templates/AGENTS-tool.md)：小型工具与展示项目的轻量模板；
+- [`.github/workflows/reusable-node-quality.yml`](.github/workflows/reusable-node-quality.yml)：跨仓库可复用的 Node.js 质量工作流。
+
+治理文件不自动归档、删除或改名仓库。高影响设置必须逐仓库复核并留下证据。
+
 ## Fork 项目规则
 
 Fork 仓库仍可作为项目记录展示，但自动化不会访问它的 Homepage：
