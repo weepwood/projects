@@ -1,0 +1,70 @@
+name: Reusable Node Quality
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version
+        required: false
+        type: string
+        default: "24"
+      working-directory:
+        description: Directory containing package.json
+        required: false
+        type: string
+        default: "."
+      install-command:
+        description: Dependency installation command
+        required: false
+        type: string
+        default: npm ci
+      lint-command:
+        description: Lint or static-check command; leave empty to skip
+        required: false
+        type: string
+        default: ""
+      test-command:
+        description: Test command; leave empty to skip
+        required: false
+        type: string
+        default: npm test
+      build-command:
+        description: Build command; leave empty to skip
+        required: false
+        type: string
+        default: npm run build --if-present
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Node quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install dependencies
+        run: ${{ inputs.install-command }}
+
+      - name: Lint and static checks
+        if: ${{ inputs.lint-command != '' }}
+        run: ${{ inputs.lint-command }}
+
+      - name: Test
+        if: ${{ inputs.test-command != '' }}
+        run: ${{ inputs.test-command }}
+
+      - name: Build
+        if: ${{ inputs.build-command != '' }}
+        run: ${{ inputs.build-command }}
