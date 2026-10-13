@@ -41,3 +41,30 @@ cd apps/workbench && npm run build
 ```
 
 原有版本：`npm test`、`npm run generate` 和 Pages 发布不变。
+
+## 第二阶段：跨仓库工作台与项目治理（只读）
+
+新增左侧导航：**Issues**、**Pull Requests**、**Actions** 和 **项目治理**。
+
+1. 启动服务并同步仓库索引后，在 Issues / PR / Actions 页面点击“同步”。
+2. Issues 与 PR 使用 GitHub Search API 查询 `user:<owner> is:open`，并仅收录索引中、当前 Token 有权限读取的仓库。每一类最多读取 1,000 条结果；接口报错时保留上次快照并标记失败。
+3. Actions 每次只检查最多 12 个非归档、非 Fork 仓库的默认分支近期运行；下一次操作从上次游标继续。初次同步不能代表扫描了所有仓库，更不代表没有显示的 CI 均通过。失败仓库有独立错误状态。
+4. 项目治理读取现有 `governance/projects.yml` 的 `projects:` 部分，展示人工指定的 tier、status、data_risk、visibility 与备注；与 GitHub 实际可见性冲突时提示人工复核。暂不修改 YAML。
+5. 全部结果只保存在本地 `~/.weepwood-projects/workbench.json`，从本地 `/api/workbench` 和 `/api/governance` 读取；没有加入公开 Pages 构建。
+6. 私有 Token 应具备目标仓库的 Metadata、Issues、Pull requests、Actions 等**只读权限**。不同 Token 的授权边界可能不同，无法以零结果证明没有任务。
+7. 本地工作台没有自动刷新定时任务；以界面手动同步为准，不会自行写入其他仓库。
+
+### 新增 API
+
+| API | 方法 | 说明 |
+| --- | --- | --- |
+| `/api/workbench` | GET | 已缓存的工作项与工作流数据 |
+| `/api/workbench/sync` | POST | 刷新 Issues、PR 和下一批 Actions |
+| `/api/governance` | GET | 只读的项目治理匹配与冲突信息 |
+
+### 当前明确不包含
+
+- 对所有仓库 Actions 一键全量扫描或历史流水线查询。
+- PR 是否可合并的判定、工作流失败根因、Issue 智能优先级。
+- 使用 PostgreSQL 的持久数据库、AI 自动代码审查、Issue 创建与 PR 自动合并。
+- 将私有工作台部署到公网或公开 GitHub Pages。
