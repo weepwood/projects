@@ -1,0 +1,5 @@
+export interface Repo { id:number; name:string; fullName:string; description:string|null; visibility:string; archived:boolean; fork:boolean; homepage:string|null; language:string|null; topics:string[]; stars:number; pushedAt:string|null; updatedAt:string; defaultBranch:string; htmlUrl:string; collectedAt:string }
+export interface Snapshot { repositories:Repo[]; updatedAt:string|null; source:'live'|'cache'|'none'; errors:string[]; rateLimit?:{remaining:number|null;reset:number|null} }
+export async function loadRepositories():Promise<Snapshot>{ const r=await fetch('/api/repositories',{cache:'no-store'});if(!r.ok)throw new Error('无法读取本地服务：HTTP '+r.status);return r.json() }
+export async function refreshRepositories():Promise<Snapshot>{const r=await fetch('/api/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();if(!r.ok)throw new Error(d.error||'同步失败');return d}
+export async function loadStatus():Promise<{configured:boolean;owner:string;lastSync:string|null;warning:string|null}>{const r=await fetch('/api/status');if(!r.ok)throw new Error('本地服务未启动');return r.json()}
