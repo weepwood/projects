@@ -4,7 +4,7 @@ import {LayoutDashboard,FolderGit2,Search,RefreshCw,ExternalLink,GitFork,Archive
 import {loadRepositories,refreshRepositories,loadStatus,type Repo,type Snapshot} from './api'
 const repositories=ref<Repo[]>([]),updatedAt=ref<string|null>(null),origin=ref('none'),errors=ref<string[]>([]),loading=ref(false),syncing=ref(false),warning=ref(''),configured=ref(false),query=ref(''),visibility=ref('all'),status=ref('all'),sort=ref('pushed'),tab=ref('overview'),selected=ref<Repo|null>(null),collapsed=ref(false),dark=ref(localStorage.getItem('projects-theme')==='dark'),page=ref(1)
 const PAGE_SIZE=30
-watch(dark,v=>{document.documentElement.dataset.theme=v?'dark':'light';localStorage.setItem('projects-theme',v)},{immediate:true})
+watch(dark,v=>{document.documentElement.dataset.theme=v?'dark':'light';localStorage.setItem('projects-theme',v?'dark':'light')},{immediate:true})
 watch([query,visibility,status,sort],()=>page.value=1)
 const filtered=computed(()=>repositories.value.filter(r=>{const q=query.value.toLowerCase().trim();return (!q||[r.name,r.fullName,r.description||'',r.language||'',...r.topics].join(' ').toLowerCase().includes(q))&&(visibility.value==='all'||r.visibility===visibility.value)&&(status.value==='all'||(status.value==='archived'?r.archived:status.value==='fork'?r.fork:!r.archived&&!r.fork))}).sort((a,b)=>sort.value==='stars'?b.stars-a.stars:sort.value==='name'?a.fullName.localeCompare(b.fullName):String(b.pushedAt||'').localeCompare(String(a.pushedAt||''))))
 const pages=computed(()=>Math.max(1,Math.ceil(filtered.value.length/PAGE_SIZE)))
