@@ -65,3 +65,7 @@ npm run enrich
 npm run health
 npm run generate
 ```
+
+## 界面图标
+
+界面使用 Lucide 0.468.0 的本地图标子集（见 `assets/lucide/LICENSE`）。`scripts/ui.js` 在生成 HTML 时内联 SVG，不需要 CDN 或浏览器端图标脚本。
