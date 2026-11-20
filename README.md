@@ -1,12 +1,14 @@
 # weepwood Projects
 
-自动聚合 `weepwood` 名下设置了 Homepage 的公开 GitHub 项目，并生成项目目录、当前状态和历史状态页面。
+个人作品集与公开项目目录。首页展示手选作品，目录自动聚合有 Homepage 的公开项目，也允许收录没有演示地址的工具。
 
 访问地址：https://weepwood.github.io/projects/
 
 ## 页面
 
-- `/`：全部项目目录。已取消自动精选，默认按最近提交排序。
+- `/`：代表作品与目录入口。
+- `/cases/<仓库名>.html`：代表作的用途、使用流程与文档。
+- `/catalog.html`：全部项目目录，默认按最近提交排序。
 - `/status.html`：当前状态、HTTP 状态码、响应时间和最后检查时间。
 - `/history.html`：最近 180 天每日汇总和最近 1000 条状态变化事件。
 
@@ -22,6 +24,10 @@
 - [`.github/workflows/reusable-node-quality.yml`](.github/workflows/reusable-node-quality.yml)：跨仓库可复用的 Node.js 质量工作流。
 
 治理文件不自动归档、删除或改名仓库。高影响设置必须逐仓库复核并留下证据。
+
+## 维护展示内容
+
+编辑 `portfolio.json`，以公开仓库全名为键。`description` 和 `category` 覆盖自动摘要及分类；代表作填写整数 `order`（从小到大）、`title`、`audience`、`approach` 和 `action`（仓库 README 入口的文字）。可选 `illustration` 指向 `assets/` 中的本地配图。没有 `order` 的项目只进目录。生成器仅匹配采集到的公开仓库；排除项优先，不读取治理台账。无 Homepage 的项目不监控、不截图、不告警。
 
 ## Fork 项目规则
 
@@ -54,6 +60,7 @@ Fork 仓库仍可作为项目记录展示，但自动化不会访问它的 Homep
 ```bash
 npm install
 npm test
+gh api --paginate "users/weepwood/repos?per_page=100&type=owner" | jq -s add > repos_raw.json
 npm run enrich
 npm run health
 npm run generate
