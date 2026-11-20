@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "assets/**"
+      - "portfolio.json"
       - "automation.config.json"
       - "lib/**"
       - "scripts/**"
@@ -15,6 +17,8 @@ on:
   push:
     branches: [main]
     paths:
+      - "assets/**"
+      - "portfolio.json"
       - "automation.config.json"
       - "lib/**"
       - "scripts/**"
@@ -81,7 +85,7 @@ jobs:
           gh api --paginate \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "users/weepwood/repos?per_page=100&sort=updated&type=owner" > repos_raw.json
+            "users/weepwood/repos?per_page=100&sort=updated&type=owner" | jq -s add > repos_raw.json
 
       - name: Enrich and classify projects
         run: npm run enrich
@@ -114,7 +118,8 @@ jobs:
           set -euo pipefail
           rm -rf dist
           mkdir -p dist
-          cp index.html status.html history.html projects_data.json automation_report.json health_data.json health_history.json dist/
+          cp -R assets cases dist/
+          cp index.html catalog.html status.html history.html projects_data.json automation_report.json health_data.json health_history.json dist/
           if [ -d covers ]; then cp -R covers dist/covers; fi
           touch dist/.nojekyll
 

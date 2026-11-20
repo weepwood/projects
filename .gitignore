@@ -1,0 +1,11 @@
+node_modules/
+dist/
+repos_raw.json
+enrichment_cache.json
+projects_enriched.json
+automation_report.json
+health_data.json
+health_history.json
+screenshot_plan.json
+screenshot_state.json
+covers/
