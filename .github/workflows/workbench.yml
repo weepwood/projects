@@ -1,0 +1,35 @@
+name: Projects v3 workbench checks
+on:
+  pull_request:
+    paths:
+      - "apps/workbench/**"
+      - "apps/local-server/**"
+      - ".github/workflows/workbench.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/workbench/**"
+      - "apps/local-server/**"
+      - ".github/workflows/workbench.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test local GitHub API
+        run: node --test apps/local-server/test/*.test.cjs
+      - name: Install frontend dependencies
+        working-directory: apps/workbench
+        run: npm install --no-audit --no-fund
+      - name: Typecheck and build Vue workbench
+        working-directory: apps/workbench
+        run: npm run build
