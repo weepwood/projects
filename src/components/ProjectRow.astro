@@ -1,0 +1,71 @@
+---
+import Status from './Status.astro';
+import { href } from '../lib/paths.js';
+
+/**
+ * One catalog row. Everything the client-side filter needs is baked into data
+ * attributes at build time, so toggling a filter never touches a JSON payload.
+ * The row is server-rendered: with JS disabled the full catalog is still here.
+ */
+const { project } = Astro.props;
+const searchText = [
+  project.name,
+  project.description,
+  project.categoryLabel,
+  project.language,
+  ...project.tags,
+]
+  .join(' ')
+  .toLowerCase();
+
+const detailUrl = project.featured ? href(`cases/${encodeURIComponent(project.name)}/`) : null;
+const pushed = project.pushedAt ? project.pushedAt.slice(0, 10) : '—';
+---
+
+<li
+  class="row"
+  data-category={project.category}
+  data-status={project.health.status}
+  data-text={searchText}
+  data-pushed={pushed}
+  data-stars={project.stars}
+  data-name={project.name.toLowerCase()}
+>
+  <div class="row-main">
+    <h3>
+      {detailUrl ? <a href={detailUrl}>{project.featured.title}</a> : project.name}
+      {project.archived && <span class="tag">已归档</span>}
+      {project.fork && <span class="tag">Fork</span>}
+    </h3>
+    <p class="summary">{project.description}</p>
+    {project.tags.length > 0 && (
+      <div class="row-sub">
+        {project.tags.slice(0, 3).map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    )}
+  </div>
+  <div class="meta">
+    <span class="category">{project.categoryLabel}</span>
+    <span class="star" title="GitHub Stars">
+      ★ {project.stars}
+    </span>
+    <span>{project.language ?? '—'}</span>
+    <span>{project.platform}</span>
+    <span>{pushed}</span>
+    <Status status={project.health.status} />
+    <span class="links">
+      {project.homepage && project.monitorHomepage && (
+        <a href={project.homepage} target="_blank" rel="noopener noreferrer">
+          体验
+        </a>
+      )}
+      {project.repo && (
+        <a href={project.repo} target="_blank" rel="noopener noreferrer">
+          源码
+        </a>
+      )}
+    </span>
+  </div>
+</li>

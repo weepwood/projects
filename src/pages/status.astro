@@ -1,0 +1,86 @@
+---
+import Base from '../layouts/Base.astro';
+import Status from '../components/Status.astro';
+import Stats from '../components/Stats.astro';
+import { loadSiteData, site } from '../data/site.js';
+
+const { projects, stats, health } = loadSiteData();
+const monitored = projects.filter((project) => project.monitorHomepage);
+const checkedAt = health.checkedAt ? new Date(health.checkedAt) : null;
+const ageHours = checkedAt ? (Date.now() - checkedAt.getTime()) / 3_600_000 : Infinity;
+const stale = ageHours > 12;
+
+const fmt = (iso) =>
+  iso ? new Date(iso).toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong', hour12: false }) : '—';
+const freshness = Number.isFinite(ageHours)
+  ? ageHours < 1
+    ? '不到 1 小时前'
+    : `${Math.round(ageHours)} 小时前`
+  : '尚未检查';
+---
+
+<Base title={site.status.title} description={site.status.description} active="status">
+  <div class="container">
+    <header class="page-head">
+      <h1>{site.status.title}</h1>
+      <p class="lede">{site.status.description} Fork 项目不发起请求、不截图、不告警。</p>
+    </header>
+
+    <Stats
+      items={[
+        { value: stats.monitored, label: '监控网页' },
+        { value: stats.online, label: '当前正常' },
+        { value: stats.attention, label: '需要关注' },
+        { value: stats.forks, label: 'Fork（不监控）' },
+      ]}
+    />
+
+    <div class={`freshness ${stale ? 'freshness--stale' : ''}`} role="status">
+      <span>数据更新于 {freshness}</span>
+      {stale && <span>— 自动检查可能停滞，超过 12 小时会在此提示。</span>}
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption class="visually-hidden">各项目当前在线状态</caption>
+        <thead>
+          <tr>
+            <th scope="col">项目</th>
+            <th scope="col">状态</th>
+            <th scope="col" class="num">
+              HTTP
+            </th>
+            <th scope="col" class="num">
+              响应
+            </th>
+            <th scope="col">平台</th>
+            <th scope="col">检查时间</th>
+            <th scope="col">入口</th>
+          </tr>
+        </thead>
+        <tbody>
+          {monitored.map((project) => (
+            <tr>
+              <td>
+                <span class="project">{project.name}</span>
+                <div class="project-sub">{project.fullName}</div>
+              </td>
+              <td>
+                <Status status={project.health.status} />
+              </td>
+              <td class="num">{project.health.statusCode ?? '—'}</td>
+              <td class="num">{project.health.latency != null ? `${project.health.latency} ms` : '—'}</td>
+              <td>{project.platform}</td>
+              <td>{fmt(project.health.checkedAt)}</td>
+              <td>
+                <a href={project.homepage} target="_blank" rel="noopener noreferrer">
+                  访问 ↗
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Base>

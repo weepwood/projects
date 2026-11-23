@@ -1,0 +1,117 @@
+---
+import '../styles/index.css';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site.js';
+import { href, asset } from '../lib/paths.js';
+
+const {
+  title,
+  description = site.description,
+  active = '',
+  image = '/og.svg',
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = active === 'home' ? `${site.title} · 项目索引` : `${title} · ${site.title}`;
+// Astro.url already carries the configured base and trailing-slash style.
+const canonical = new URL(Astro.url.pathname, site.url).href;
+const ogImage = new URL(image, site.url).href;
+---
+
+<!doctype html>
+<html lang={site.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.title} · 新增项目`}
+      href={href('feed.xml')}
+    />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.title} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={site.locale.replace('-', '_')} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script is:inline>
+      // Runs before first paint so a returning dark-mode reader never sees a white flash.
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+        const dark = document.documentElement.dataset.theme === 'dark';
+        const mark = (el) => {
+          if (!el) return;
+          el.setAttribute('aria-pressed', String(dark));
+          el.setAttribute('aria-label', dark ? '切换到浅色模式' : '切换到深色模式');
+        };
+        document.addEventListener('DOMContentLoaded', () => mark(document.getElementById('theme-toggle')));
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      跳到主要内容
+    </a>
+
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href={href()}>
+          <span class="mark" aria-hidden="true">
+            {site.brand.mark}
+          </span>
+          {site.brand.name}
+          <span class="suffix">{site.brand.suffix}</span>
+        </a>
+        <nav class="site-nav" aria-label="主导航">
+          {site.nav.map((item) => (
+            <a
+              href={href(item.href.replace(/^\//, ''))}
+              aria-current={active === item.id ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+          <button
+            class="theme-toggle"
+            type="button"
+            id="theme-toggle"
+            aria-label="切换深色模式"
+            aria-pressed="false"
+          >
+            <Icon name="sun-moon" size={15} />
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>{site.footer}</span>
+        <span>{site.author}</span>
+      </div>
+    </footer>
+
+    <script>
+      import '../client/theme.js';
+    </script>
+  </body>
+</html>

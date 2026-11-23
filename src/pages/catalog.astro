@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectRow from '../components/ProjectRow.astro';
+import CatalogFilter from '../components/CatalogFilter.astro';
+import { loadSiteData, site } from '../data/site.js';
+
+const { projects, categories, categoryLabels } = loadSiteData();
+const statuses = [...new Set(projects.map((project) => project.health.status))];
+const catalog = site.catalog;
+---
+
+<Base title={catalog.title} description={catalog.description} active="catalog">
+  <div class="container">
+    <header class="page-head">
+      <h1>{catalog.title}</h1>
+      <p class="lede">
+        {catalog.description} 共 {projects.length} 个项目，默认按最近提交排序；Fork
+        与无演示地址的工具只保留源码入口。
+      </p>
+    </header>
+
+    <CatalogFilter categories={categories.map((category) => category.id)} {categoryLabels} {statuses} />
+
+    <div class="toolbar-meta">
+      <p id="catalog-summary" aria-live="polite" aria-atomic="true">
+        显示 {projects.length} / {projects.length} 个项目
+      </p>
+      <button class="text-link" type="button" id="catalog-reset">
+        重置筛选
+      </button>
+    </div>
+
+    <ul class="rows" id="catalog-list">
+      {projects.map((project) => (
+        <ProjectRow project={project} />
+      ))}
+    </ul>
+
+    <p class="empty" id="catalog-empty" hidden>
+      {catalog.empty}
+    </p>
+
+    <noscript>
+      <p class="empty">筛选与排序需要 JavaScript，但上方列表在禁用 JavaScript 时依然完整可读。</p>
+    </noscript>
+  </div>
+</Base>
+
+<script>
+  import '../client/catalog.js';
+</script>

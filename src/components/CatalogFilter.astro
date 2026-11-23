@@ -1,0 +1,52 @@
+---
+import Icon from './Icon.astro';
+import { HEALTH_LABELS, HEALTH_ORDER } from '../lib/health.js';
+
+const { categories, categoryLabels, statuses } = Astro.props;
+const presentCategories = [...new Set(categories)].sort();
+const presentStatuses = HEALTH_ORDER.filter((status) => statuses.includes(status));
+---
+
+<form class="toolbar" role="search" aria-label="筛选项目" onsubmit="return false">
+  <label class="field">
+    <Icon name="search" size={15} />
+    <span class="visually-hidden">搜索项目</span>
+    <input
+      class="control"
+      id="catalog-search"
+      type="search"
+      placeholder="搜索名称、描述或标签"
+      autocomplete="off"
+    />
+  </label>
+
+  <label>
+    <span class="visually-hidden">按分类筛选</span>
+    <select class="control" id="catalog-category">
+      <option value="">全部分类</option>
+      {presentCategories.map((id) => (
+        <option value={id}>{categoryLabels[id] ?? id}</option>
+      ))}
+    </select>
+  </label>
+
+  <label>
+    <span class="visually-hidden">按状态筛选</span>
+    <select class="control" id="catalog-status">
+      <option value="">全部状态</option>
+      {presentStatuses.map((status) => (
+        <option value={status}>{HEALTH_LABELS[status] ?? status}</option>
+      ))}
+    </select>
+  </label>
+
+  <label>
+    <span class="visually-hidden">排序</span>
+    <select class="control" id="catalog-sort">
+      <option value="pushed">最近提交</option>
+      <option value="stars">Stars</option>
+      <option value="name">名称</option>
+      <option value="category">分类</option>
+    </select>
+  </label>
+</form>

@@ -1,0 +1,86 @@
+/*
+ * Design tokens. Everything downstream uses these variables only.
+ * Direction: restrained light — paper white, ink grey, one neutral accent.
+ * No second accent, no gradients, no shadows heavier than a hairline.
+ */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-sunken: #fafafa;
+  --surface-raised: #ffffff;
+
+  /* Ink */
+  --ink: #16181d;
+  --ink-secondary: #5c6270;
+  --ink-tertiary: #8b919d;
+  --ink-inverse: #ffffff;
+
+  /* Lines: one weight only. Hierarchy comes from ink, not from borders. */
+  --line: #e4e6ea;
+  --line-strong: #cfd3da;
+
+  /* A single accent, used for links and the active nav rule. */
+  --accent: #2f4cff;
+  --accent-sunken: #eef1ff;
+
+  /* Semantic colours are only for status dots and badges. Never for decoration. */
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --bad: #cf222e;
+  --idle: #8b919d;
+
+  /* Type: one family per role, three sizes of scale. */
+  --font-display:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-text: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+
+  --step--2: 0.6875rem;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.875rem, 3vw, 2.5rem);
+  --step-4: clamp(2.5rem, 5.5vw, 3.75rem);
+
+  /* Spacing: 4px base. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+  --measure: 68ch;
+  --container: 1120px;
+  --header-h: 60px;
+  --transition: 120ms ease;
+}
+
+/* Dark mode is opt-in by the toggle only: a portfolio is read on someone's
+   schedule, and following the OS makes screenshots of the site unpredictable. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface: #101114;
+  --surface-sunken: #17181c;
+  --surface-raised: #17181c;
+  --ink: #f2f3f5;
+  --ink-secondary: #a5abb8;
+  --ink-tertiary: #737a88;
+  --ink-inverse: #101114;
+  --line: #25272d;
+  --line-strong: #363a42;
+  --accent: #8fa0ff;
+  --accent-sunken: #1b1f33;
+  --ok: #4ac26b;
+  --warn: #d4a72c;
+  --bad: #ff6b6b;
+  --idle: #737a88;
+}
