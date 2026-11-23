@@ -62,17 +62,7 @@ export function buildProjects({ enriched, health, curated, registry, config, cov
           : inferred.category === taxonomy.defaultCategory
             ? 'fallback'
             : 'inferred',
-      featured: featured
-        ? {
-            order: featured.order,
-            title: featured.title ?? repo.name,
-            audience: featured.audience ?? '',
-            approach: featured.approach ?? '',
-            action: featured.action ?? '查看说明',
-            poster: featured.poster ?? { kind: 'type', tone: 'paper', caption: repo.name },
-            caseStudy: featured.order,
-          }
-        : null,
+      featured: featured ? featuredView(featured, repo.name) : null,
       registry: registry.projects?.[repo.fullName] ?? null,
       monitorHomepage: shouldMonitorProject(repo),
       cover: `covers/${repo.name}.png`,
@@ -94,6 +84,73 @@ export function buildProjects({ enriched, health, curated, registry, config, cov
   );
 
   return projects;
+}
+
+function featuredView(entry, name) {
+  return {
+    order: entry.order,
+    title: entry.title ?? name,
+    audience: entry.audience ?? '',
+    approach: entry.approach ?? '',
+    action: entry.action ?? '查看说明',
+    poster: entry.poster ?? { kind: 'type', tone: 'paper', caption: name },
+    caseStudy: entry.order,
+  };
+}
+
+/**
+ * The subset of the site that lives in git: featured work, copy and taxonomy.
+ * Used when `.cache/enriched.json` is absent (a fresh clone, or CI before the
+ * pipeline has run) so pages still render instead of failing the build.
+ */
+export function curatedOnlyProjects({ curated, registry, config = {} }) {
+  const taxonomy = curated.taxonomy;
+  const labels = new Map(taxonomy.categories.map((category) => [category.id, category.label]));
+  const overrides = { ...(config.overrides ?? {}), ...(curated.overrides ?? {}) };
+
+  return curated.featured
+    .filter((entry) => !overrides[entry.fullName]?.hidden)
+    .map((entry) => {
+      const name = entry.fullName.split('/').pop();
+      const category = entry.category ?? taxonomy.defaultCategory;
+      return {
+        name,
+        fullName: entry.fullName,
+        description: entry.description ?? '暂无描述',
+        repo: safeHttpUrl(entry.repo ?? `https://github.com/${entry.fullName}`),
+        homepage: safeHttpUrl(entry.homepage),
+        language: null,
+        stars: 0,
+        forks: 0,
+        topics: [],
+        tags: [],
+        createdAt: '',
+        updatedAt: '',
+        pushedAt: '',
+        latestCommitSha: '',
+        archived: false,
+        fork: false,
+        platform: platformOf(entry.homepage),
+        host: hostOf(entry.homepage),
+        category,
+        categoryLabel: labels.get(category) ?? '其他项目',
+        categoryConfidence: 0.99,
+        categorySource: 'curated',
+        featured: featuredView(entry, name),
+        registry: registry.projects?.[entry.fullName] ?? null,
+        monitorHomepage: Boolean(safeHttpUrl(entry.homepage)),
+        cover: `covers/${name}.png`,
+        coverAvailable: false,
+        health: {
+          status: safeHttpUrl(entry.homepage) ? 'unknown' : 'not_monitored',
+          statusCode: null,
+          latency: null,
+          checkedAt: null,
+          error: null,
+        },
+      };
+    })
+    .sort((a, b) => a.featured.order - b.featured.order);
 }
 
 /** Projects whose category fell back to "other", for the enrichment report. */

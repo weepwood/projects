@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildProjects, classifyReport } from '../src/lib/merge.js';
+import { buildProjects, classifyReport, curatedOnlyProjects } from '../src/lib/merge.js';
 import { esc, serializeForInlineScript, cx } from '../src/lib/html.js';
 
 const taxonomy = {
@@ -140,4 +140,38 @@ test('inline JSON cannot close its script tag', () => {
 
 test('cx drops falsy class names', () => {
   assert.equal(cx('a', null, undefined, false, 'b'), 'a b');
+});
+
+test('without pipeline data the curated entries still render', () => {
+  const curatedOnly = curatedOnlyProjects({ curated, registry: { projects: {} }, config: { overrides: {} } });
+  assert.deepEqual(
+    curatedOnly.map((project) => project.name),
+    ['tabs'],
+  );
+  const [only] = curatedOnly;
+  assert.equal(only.featured.order, 1);
+  assert.equal(only.featured.title, 'Tabs');
+  assert.equal(only.categoryLabel, '效率工具');
+  assert.equal(only.categorySource, 'curated');
+  // The fixture has no homepage, so there is nothing to monitor.
+  assert.equal(only.health.status, 'not_monitored');
+  assert.equal(only.monitorHomepage, false);
+  assert.equal(only.coverAvailable, false);
+});
+
+test('curated fallback respects hidden overrides and fills a repo URL', () => {
+  const hidden = {
+    ...curated,
+    featured: [...curated.featured, { fullName: 'owner/hidden', order: 2, category: 'other' }],
+  };
+  const projects = curatedOnlyProjects({
+    curated: hidden,
+    registry: { projects: {} },
+    config: { overrides: { 'owner/hidden': { hidden: true } } },
+  });
+  assert.deepEqual(
+    projects.map((project) => project.fullName),
+    ['owner/tabs'],
+  );
+  assert.equal(projects[0].repo, 'https://github.com/owner/tabs');
 });
