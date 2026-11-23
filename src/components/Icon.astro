@@ -1,0 +1,26 @@
+---
+/**
+ * Inline a local Lucide subset at build time. Icons are decorative unless a
+ * `label` is passed, so they are hidden from assistive tech by default.
+ */
+const { name, size = 16, label } = Astro.props;
+const files = import.meta.glob('../../assets/lucide/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+const source = files[`../../assets/lucide/${name}.svg`];
+if (!source) throw new Error(`Unknown icon: ${name}`);
+
+const svg = source
+  .slice(source.indexOf('<svg'))
+  .replace('<svg', `<svg width="${size}" height="${size}"`)
+  .replace(
+    '<svg',
+    `<svg ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true" focusable="false"'}`,
+  )
+  .replace(/\s+/g, ' ')
+  .trim();
+---
+
+<Fragment set:html={svg} />

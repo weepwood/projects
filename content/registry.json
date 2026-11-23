@@ -1,0 +1,89 @@
+{
+  "_comment": "机器可读的项目分级，由 governance/projects.yml 迁移而来；叙述性说明与复核清单保留在 governance/README.md。",
+  "schemaVersion": 1,
+  "owner": "weepwood",
+  "reviewedAt": "2026-07-26",
+  "projects": {
+    "weepwood/MRR": {
+      "tier": "S",
+      "status": "active",
+      "kind": "production",
+      "visibility": "private",
+      "default_branch": "main",
+      "data_risk": "critical",
+      "governance": "strict"
+    },
+    "weepwood/ATab": {
+      "tier": "A",
+      "status": "developing",
+      "kind": "product",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/LocalLens": {
+      "tier": "A",
+      "status": "developing",
+      "kind": "product",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/PacketLens": {
+      "tier": "A",
+      "status": "developing",
+      "kind": "product",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/AuditKit": {
+      "tier": "A",
+      "status": "developing",
+      "kind": "product",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/r2-web": {
+      "tier": "A",
+      "status": "active",
+      "kind": "product",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/weepwood-note": {
+      "tier": "A",
+      "status": "active",
+      "kind": "knowledge-base",
+      "visibility": "private",
+      "default_branch": "main",
+      "data_risk": "medium",
+      "governance": "standard"
+    },
+    "weepwood/projects": {
+      "tier": "A",
+      "status": "active",
+      "kind": "portfolio-governance",
+      "visibility": "public",
+      "default_branch": "main",
+      "data_risk": "low",
+      "governance": "standard"
+    },
+    "weepwood/s2u": {
+      "tier": "B",
+      "status": "maintenance",
+      "kind": "tool",
+      "visibility": "public",
+      "default_branch": "master",
+      "data_risk": "low",
+      "governance": "lightweight"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+---
+import { HEALTH_LABELS } from '../lib/health.js';
+const { status } = Astro.props;
+const label = HEALTH_LABELS[status] ?? status;
+---
+
+<span class={`status status--${status}`}>{label}</span>

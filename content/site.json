@@ -1,0 +1,36 @@
+{
+  "title": "weepwood",
+  "description": "个人项目索引：工具、应用与创意实验。",
+  "url": "https://weepwood.github.io/projects/",
+  "locale": "zh-CN",
+  "author": "weepwood",
+  "brand": { "mark": "✳", "name": "weepwood", "suffix": "." },
+  "nav": [
+    { "id": "home", "label": "作品集", "href": "/" },
+    { "id": "catalog", "label": "项目目录", "href": "/catalog/" },
+    { "id": "status", "label": "当前状态", "href": "/status/" },
+    { "id": "history", "label": "历史状态", "href": "/history/" }
+  ],
+  "footer": "WEEPWOOD / PROJECT ARCHIVE",
+  "home": {
+    "kicker": "INDEPENDENT DEVELOPER PORTFOLIO",
+    "title": { "lead": "Project", "em": "Index", "suffix": "." },
+    "summary": "个人项目索引",
+    "summaryExtra": "工具、应用与创意实验。",
+    "primaryAction": "浏览项目目录",
+    "secondaryAction": "查看代表作"
+  },
+  "catalog": {
+    "title": "项目目录",
+    "description": "浏览公开作品，按用途、名称或状态查找。",
+    "empty": "没有匹配的项目。"
+  },
+  "status": {
+    "title": "当前状态",
+    "description": "查看所有网页项目当前运行状态。"
+  },
+  "history": {
+    "title": "历史状态",
+    "description": "查看每日汇总和状态变化历史。"
+  }
+}

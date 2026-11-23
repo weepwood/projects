@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 182"><rect width="640" height="182" rx="18" fill="#36594c"/><g fill="#fff" font-family="system-ui,sans-serif"><text x="38" y="58" font-size="26">ATab　/　使用流程</text><rect x="38" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="122" y="128" text-anchor="middle" font-size="21">多个窗口</text><rect x="238" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="322" y="128" text-anchor="middle" font-size="21">保存会话</text><rect x="438" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="522" y="128" text-anchor="middle" font-size="21">恢复工作</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="ATab 工作台示意">
+  <rect width="400" height="300" fill="#fafafa"/>
+  <g stroke="#e4e6ea"><path d="M0 60h400M0 120h400M0 180h400M0 240h400"/></g>
+  <rect x="36" y="44" width="150" height="104" rx="6" fill="#fff" stroke="#cfd3da"/>
+  <rect x="36" y="44" width="150" height="22" rx="6" fill="#f2f3f5" stroke="#cfd3da"/>
+  <circle cx="48" cy="55" r="3" fill="#8b919d"/><circle cx="58" cy="55" r="3" fill="#8b919d"/><circle cx="68" cy="55" r="3" fill="#8b919d"/>
+  <text x="48" y="92" font-family="Inter, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#16181d">Workspace</text>
+  <text x="48" y="112" font-family="ui-monospace, monospace" font-size="9" fill="#5c6270">Research tabs · 12</text>
+  <text x="48" y="130" font-family="ui-monospace, monospace" font-size="9" fill="#5c6270">Saved sessions · 4</text>
+  <rect x="214" y="76" width="150" height="72" rx="6" fill="#fff" stroke="#cfd3da"/>
+  <text x="228" y="104" font-family="ui-monospace, monospace" font-size="9" fill="#5c6270">SESSION 2026-11-20</text>
+  <text x="228" y="126" font-family="ui-monospace, monospace" font-size="9" fill="#8b919d">docs · github · figma</text>
+  <rect x="214" y="168" width="150" height="72" rx="6" fill="#fff" stroke="#cfd3da"/>
+  <text x="228" y="196" font-family="ui-monospace, monospace" font-size="9" fill="#5c6270">SESSION 2026-11-18</text>
+  <text x="228" y="218" font-family="ui-monospace, monospace" font-size="9" fill="#8b919d">research · notes</text>
+  <circle cx="340" cy="140" r="4" fill="#2f4cff"/>
+</svg>

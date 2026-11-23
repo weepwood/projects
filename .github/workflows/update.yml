@@ -1,30 +1,30 @@
-name: Update and deploy project directory
+name: Update and deploy
 
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: '23 */6 * * *'
   pull_request:
     branches: [main]
     paths:
-      - "assets/**"
-      - "portfolio.json"
-      - "automation.config.json"
-      - "lib/**"
-      - "scripts/**"
-      - "tests/**"
-      - "package.json"
-      - ".github/workflows/update.yml"
+      - 'src/**'
+      - 'content/**'
+      - 'public/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'astro.config.mjs'
+      - '.github/workflows/update.yml'
   push:
     branches: [main]
     paths:
-      - "assets/**"
-      - "portfolio.json"
-      - "automation.config.json"
-      - "lib/**"
-      - "scripts/**"
-      - "tests/**"
-      - "package.json"
-      - ".github/workflows/update.yml"
+      - 'src/**'
+      - 'content/**'
+      - 'public/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'astro.config.mjs'
+      - '.github/workflows/update.yml'
   workflow_dispatch: {}
 
 permissions:
@@ -49,31 +49,24 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '22'
+          cache: npm
 
+      # Cache key is content-derived rather than run-derived: one entry per
+      # configuration, refreshed in place, instead of a new forever-saved entry
+      # on every scheduled run.
       - name: Restore automation state and screenshots
         uses: actions/cache/restore@v4
         with:
           path: |
-            covers
-            enrichment_cache.json
-            health_data.json
-            health_history.json
-            screenshot_state.json
-          key: projects-automation-${{ runner.os }}-${{ github.run_id }}
+            .cache
+            public/covers
+          key: automation-${{ runner.os }}-${{ hashFiles('automation.config.json', 'content/**', 'package-lock.json') }}
           restore-keys: |
-            projects-automation-${{ runner.os }}-
-
-      - name: Restore deployed history fallback
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: |
-          if [ ! -s health_history.json ]; then
-            curl -fsSL https://weepwood.github.io/projects/health_history.json -o health_history.json || true
-          fi
+            automation-${{ runner.os }}-
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci
 
       - name: Run tests
         run: npm test
@@ -109,19 +102,20 @@ jobs:
         if: github.event_name != 'pull_request'
         run: npm run issues:sync
 
-      - name: Build static site
-        run: npm run generate
+      - name: Build site
+        run: npm run build
 
-      - name: Prepare Pages artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf dist
-          mkdir -p dist
-          cp -R assets cases dist/
-          cp index.html catalog.html status.html history.html projects_data.json automation_report.json health_data.json health_history.json dist/
-          if [ -d covers ]; then cp -R covers dist/covers; fi
-          touch dist/.nojekyll
+      - name: Enforce size budget
+        run: npm run check:budget
+
+      - name: Save automation state and screenshots
+        if: github.event_name != 'pull_request' && always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache
+            public/covers
+          key: automation-${{ runner.os }}-${{ hashFiles('automation.config.json', 'content/**', 'package-lock.json') }}
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
@@ -132,18 +126,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
-      - name: Save automation state and screenshots
-        if: github.event_name != 'pull_request' && always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            covers
-            enrichment_cache.json
-            health_data.json
-            health_history.json
-            screenshot_state.json
-          key: projects-automation-${{ runner.os }}-${{ github.run_id }}
 
   deploy:
     if: github.event_name != 'pull_request'

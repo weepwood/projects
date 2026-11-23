@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 182"><rect width="640" height="182" rx="18" fill="#404b72"/><g fill="#fff" font-family="system-ui,sans-serif"><text x="38" y="58" font-size="26">LocalLens　/　使用流程</text><rect x="38" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="122" y="128" text-anchor="middle" font-size="21">本地原片</text><rect x="238" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="322" y="128" text-anchor="middle" font-size="21">建立索引</text><rect x="438" y="93" width="168" height="55" rx="12" fill="#ffffff" fill-opacity=".12"/><text x="522" y="128" text-anchor="middle" font-size="21">跨端浏览</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="LocalLens 媒体库示意">
+  <rect width="400" height="300" fill="#fafafa"/>
+  <g stroke="#e4e6ea"><path d="M0 60h400M0 120h400M0 180h400M0 240h400"/></g>
+  <circle cx="140" cy="150" r="86" fill="none" stroke="#cfd3da"/>
+  <circle cx="140" cy="150" r="54" fill="none" stroke="#cfd3da"/>
+  <circle cx="140" cy="150" r="22" fill="#16181d" fill-opacity="0.05" stroke="#16181d"/>
+  <circle cx="140" cy="150" r="5" fill="#2f4cff"/>
+  <g stroke="#cfd3da"><path d="M54 150h172M140 64v172"/></g>
+  <text x="240" y="102" font-family="ui-monospace, monospace" font-size="10" fill="#5c6270">INDEXED</text>
+  <text x="240" y="132" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#16181d">12,480</text>
+  <text x="240" y="176" font-family="ui-monospace, monospace" font-size="10" fill="#5c6270">THUMBNAILS</text>
+  <text x="240" y="206" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#16181d">12,480</text>
+  <text x="240" y="250" font-family="ui-monospace, monospace" font-size="10" fill="#8b919d">原文件未移动</text>
+</svg>

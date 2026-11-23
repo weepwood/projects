@@ -1,0 +1,48 @@
+{
+  "_comment": "人工意图：分类体系、代表作、覆盖文案。自动推断只填充这里没有说明的字段。",
+  "taxonomy": {
+    "id": "taxonomy",
+    "version": 1,
+    "categories": [
+      { "id": "efficiency", "label": "效率工具", "hint": "标签页、笔记、剪贴板、快捷操作" },
+      { "id": "media", "label": "媒体管理", "hint": "照片、视频、音频的整理与浏览" },
+      { "id": "devtools", "label": "开发者工具", "hint": "转换、调试、抓包、生成器" },
+      { "id": "design", "label": "设计与 UI", "hint": "组件、图标、风格、动效" },
+      { "id": "learning", "label": "学习与可视化", "hint": "教程、算法、数学、模拟" },
+      { "id": "games", "label": "游戏与互动", "hint": "游戏、玩具、创意交互" },
+      { "id": "apps", "label": "完整应用", "hint": "有后端或完整业务流程的产品" },
+      { "id": "mirrors", "label": "镜像与复刻", "hint": "上游副本、页面复刻" },
+      { "id": "other", "label": "其他项目", "hint": "尚未归类" }
+    ],
+    "defaultCategory": "other"
+  },
+  "featured": [
+    {
+      "fullName": "weepwood/ATab",
+      "order": 1,
+      "category": "efficiency",
+      "title": "ATab",
+      "description": "把分散在浏览器窗口里的标签页保存为会话，下次从原处继续。",
+      "audience": "经常同时查阅多组资料的 Chrome 和 Edge 用户。",
+      "approach": "在工作台按域名整理标签页，保存当前窗口或全部窗口。恢复会话时使用新窗口，不打乱手头的工作。",
+      "action": "查看扩展说明",
+      "poster": { "kind": "browser", "tone": "paper", "caption": "Workspace" }
+    },
+    {
+      "fullName": "weepwood/LocalLens",
+      "order": 2,
+      "category": "media",
+      "title": "LocalLens",
+      "description": "不搬动原文件，也能把电脑里的照片和视频整理成可检索的媒体库。",
+      "audience": "希望自己保管原片，又想在不同设备上浏览媒体的人。",
+      "approach": "Windows 端为选定文件夹建立本地索引、缩略图和虚拟分类；Android 设备通过局域网配对浏览。",
+      "action": "查看安装说明",
+      "poster": { "kind": "lens", "tone": "sand", "caption": "Library" }
+    }
+  ],
+  "overrides": {
+    "weepwood/MRR": { "hidden": true },
+    "weepwood/projects": { "hidden": true }
+  },
+  "exclude": []
+}

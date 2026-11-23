@@ -1,0 +1,9 @@
+dist/
+.cache/
+node_modules/
+public/
+assets/
+package-lock.json
+docs/
+governance/
+.astro/
