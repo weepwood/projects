@@ -1,88 +1,261 @@
 ---
 import Base from '../layouts/Base.astro';
-import FeaturedCard from '../components/FeaturedCard.astro';
-import Stats from '../components/Stats.astro';
 import Icon from '../components/Icon.astro';
+import Tile from '../components/Tile.astro';
+import HealthMix from '../components/HealthMix.astro';
+import FeaturedList from '../components/FeaturedList.astro';
+import ProjectRow from '../components/ProjectRow.astro';
+import CatalogFilter from '../components/CatalogFilter.astro';
+import Status from '../components/Status.astro';
+import Sparkline from '../components/Sparkline.astro';
 import { loadSiteData, site } from '../data/site.js';
-import { href, asset } from '../lib/paths.js';
+import { href } from '../lib/paths.js';
 
-const { featured, projects, stats } = loadSiteData();
+const { featured, projects, stats, health, history } = loadSiteData();
 const home = site.home;
-const catalogCount = projects.length;
+
+const checkedAt = health.checkedAt ? new Date(health.checkedAt) : null;
+const ageHours = checkedAt ? (Date.now() - checkedAt.getTime()) / 3_600_000 : Infinity;
+const freshness = Number.isFinite(ageHours)
+  ? ageHours < 1
+    ? '不到 1 小时前'
+    : `${Math.round(ageHours)} 小时前`
+  : '尚未检查';
+
+const statuses = [...new Set(projects.map((project) => project.health.status))];
+const categories = [...new Set(projects.map((project) => project.category))];
+const categoryLabels = Object.fromEntries(projects.map((p) => [p.category, p.categoryLabel]));
+
+// Recent status transitions, newest first — the "what changed" feed that used to
+// require opening a separate history page.
+const recentEvents = [...(history.events ?? [])].reverse().slice(0, 5);
+const fmtTime = (iso) =>
+  iso
+    ? new Date(iso).toLocaleString('zh-CN', {
+        timeZone: 'Asia/Hong_Kong',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+    : '—';
+
+// Attention list: monitored projects that are not clearly healthy.
+const attention = projects
+  .filter((project) => ['unstable', 'degraded', 'offline'].includes(project.health.status))
+  .slice(0, 4);
+
+// A tiny activity histogram from the daily history (only buckets that exist).
+const recentDaily = (history.daily ?? []).slice(-24);
+const activityBars = recentDaily.map((entry) =>
+  entry.monitored ? Math.round((entry.online / entry.monitored) * 100) : 0,
+);
 ---
 
-<Base title={home.title.lead} description={site.description} active="home">
-  <div class="container">
-    <section class="hero">
+<Base
+  title={home.title.lead}
+  description={site.description}
+  active="home"
+  counts={{
+    projects: projects.length,
+    monitored: stats.monitored,
+    online: stats.online,
+    attention: stats.attention,
+  }}
+>
+  <section class="hero">
+    <div class="hero-grid">
       <div>
-        <span class="kicker">{home.kicker}</span>
+        <span class="eyebrow">{freshness === '尚未检查' ? home.kicker : `状态更新于 ${freshness}`}</span>
         <h1>
-          {home.title.lead}
-          <br />
-          <em>{home.title.em}</em>
+          {home.title.lead} <em>{home.title.em}</em>
           {home.title.suffix}
         </h1>
         <p class="lede">
-          {home.summary} / {home.summaryExtra}
+          {home.summary} — {home.summaryExtra}
         </p>
-        <div class="cta">
-          <a class="btn btn--primary" href={href('catalog/')}>
-            {home.primaryAction} <Icon name="arrow-right" size={14} />
+        <div class="hero-actions">
+          <a class="btn btn--primary" href="#catalog">
+            <Icon name="list-filter" size={15} /> 浏览 {projects.length} 个项目
           </a>
-          <a class="text-link" href="#selected">
-            {home.secondaryAction} ↓
+          <a class="btn" href={href('status/')}>
+            <Icon name="activity" size={15} /> 在线状态
+          </a>
+          <a class="btn btn--ghost" href="#featured">
+            代表作 <Icon name="arrow-down" size={13} />
           </a>
         </div>
       </div>
-      <figure class="hero-art">
-        <img src={asset('assets/fold.svg')} alt="" width="520" height="390" decoding="async" />
-        <figcaption>
-          <span>ARCHIVE / {String(catalogCount).padStart(3, '0')}</span>
-          <span>GRID 32</span>
-        </figcaption>
-      </figure>
-    </section>
 
-    <section class="section" id="selected">
-      <div class="section-head">
-        <div>
-          <h2>Selected work</h2>
-          <p>长期维护、有明确使用场景的项目。</p>
+      <div class="hero-stack">
+        <div class="tiles">
+          <Tile
+            label="收录项目"
+            value={projects.length}
+            icon="boxes"
+            meta={`${stats.forks} 个 Fork 不访问`}
+          />
+          <Tile label="监控网页" value={stats.monitored} icon="radio" meta={`${stats.online} 个正常`} />
+          <Tile
+            label="需关注"
+            value={stats.attention}
+            icon="triangle-alert"
+            meta={stats.attention ? '<b class="is-warn">有站点异常</b>' : '<b>全部正常</b>'}
+          />
+          <Tile
+            label="最近检查"
+            value={checkedAt ? freshness.replace('前', '') : '—'}
+            icon="clock"
+            meta="时区 HKT"
+          />
         </div>
-        <a class="text-link" href={href('catalog/')}>
-          全部项目 ({catalogCount}) <Icon name="arrow-up-right" size={13} />
-        </a>
       </div>
-      <div class="features">
-        {featured.map((project) => (
-          <FeaturedCard project={project} />
-        ))}
-      </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section" aria-label="档案统计">
-      <Stats
-        items={[
-          { value: catalogCount, label: '收录项目' },
-          { value: featured.length, label: '代表作品' },
-          { value: stats.monitored, label: '监控网页' },
-          { value: stats.forks, label: 'Fork（不访问）' },
-        ]}
-      />
-      <aside class="archive-strip" aria-label="档案入口">
-        <a href={href('catalog/')}>
-          <strong>{catalogCount}</strong>
-          <span>按分类浏览全部项目</span>
-        </a>
-        <a href={href('status/')}>
-          <strong>{stats.online}</strong>
-          <span>当前可访问</span>
-        </a>
-        <a href={href('history/')}>
-          <strong>{stats.attention}</strong>
-          <span>需要关注</span>
-        </a>
-      </aside>
-    </section>
+  <div class="grid grid--main">
+    <div class="stack">
+      <section id="featured">
+        <FeaturedList projects={featured} />
+      </section>
+
+      <section class="card" id="catalog">
+        <div class="card-head">
+          <h2>全部项目</h2>
+          <span class="card-sub">搜索、筛选与排序都在这里</span>
+          <div class="card-actions">
+            <a class="btn btn--ghost btn--sm" href={href('catalog/')}>
+              独立目录页 <Icon name="arrow-up-right" size={13} />
+            </a>
+          </div>
+        </div>
+
+        <CatalogFilter {categories} {categoryLabels} {statuses} />
+
+        <div class="toolbar-meta">
+          <p id="catalog-summary" aria-live="polite" aria-atomic="true">
+            显示 {projects.length} / {projects.length} 个项目
+          </p>
+          <button class="btn btn--ghost btn--sm" type="button" id="catalog-reset">
+            重置筛选
+          </button>
+        </div>
+
+        <ul class="rows" id="catalog-list">
+          {projects.map((project) => (
+            <ProjectRow project={project} />
+          ))}
+        </ul>
+
+        <p class="empty" id="catalog-empty" hidden>
+          {site.catalog.empty}
+        </p>
+
+        <noscript>
+          <p class="empty">筛选与排序需要 JavaScript，但上方列表在禁用 JavaScript 时依然完整可读。</p>
+        </noscript>
+      </section>
+    </div>
+
+    <aside class="stack" aria-label="副栏">
+      <HealthMix {stats} />
+
+      <section class="card">
+        <div class="card-head">
+          <h2>需要关注</h2>
+          <span class="card-sub">{attention.length ? `${stats.attention} 个站点` : '暂无'}</span>
+        </div>
+        <div class="card-body card-body--flush">
+          {attention.length === 0 ? (
+            <p class="empty">所有监控站点都正常。</p>
+          ) : (
+            <div class="rows">
+              {attention.map((project) => (
+                <div class="row">
+                  <div class="row-main">
+                    <span class="row-title">{project.name}</span>
+                    <span class="row-desc">{project.health.error ?? project.platform}</span>
+                  </div>
+                  <div class="row-meta">
+                    <Status status={project.health.status} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>最近变化</h2>
+          <div class="card-actions">
+            <a class="btn btn--ghost btn--sm" href={href('history/')}>
+              历史 <Icon name="arrow-right" size={12} />
+            </a>
+          </div>
+        </div>
+        <div class="timeline">
+          {recentEvents.length === 0 ? (
+            <p class="empty">尚无状态变化。</p>
+          ) : (
+            recentEvents.map((event) => (
+              <div class="tl-item">
+                <span
+                  class={`tl-dot ${
+                    ['online', 'recovered'].includes(event.to)
+                      ? 'tl-dot--ok'
+                      : event.to === 'offline'
+                        ? 'tl-dot--bad'
+                        : 'tl-dot--warn'
+                  }`}
+                  aria-hidden="true"
+                />
+                <div class="tl-body">
+                  <b>{event.fullName.split('/').pop()}</b>
+                  <span>{event.error ?? '状态变化'}</span>
+                </div>
+                <span class="tl-time">{fmtTime(event.at)}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>近 24 次检查</h2>
+          <span class="card-sub">在线占比</span>
+        </div>
+        <div class="card-body">
+          {activityBars.length ? (
+            <span class="tile-bars" aria-hidden="true">
+              {activityBars.map((bar) => (
+                <i style={`height:${Math.max(6, bar)}%`} />
+              ))}
+            </span>
+          ) : (
+            <p class="tile-meta">还没有历史数据</p>
+          )}
+        </div>
+      </section>
+    </aside>
   </div>
+
+  <section class="section-title">
+    <h2>近 180 天可用率</h2>
+    <p>
+      柱高为当日在线占比 · <a href={href('history/')}>查看每日明细</a>
+    </p>
+  </section>
+  <section class="card">
+    <div class="card-body card-body--flush" style="padding-top:var(--s4)">
+      <Sparkline daily={history.daily ?? []} />
+    </div>
+  </section>
 </Base>
+
+<script>
+  import '../client/catalog.js';
+</script>

@@ -1,43 +1,59 @@
 ---
 import Base from '../layouts/Base.astro';
 import Sparkline from '../components/Sparkline.astro';
+import PageHead from '../components/PageHead.astro';
 import { HEALTH_LABELS } from '../lib/health.js';
 import { loadSiteData, site } from '../data/site.js';
 
-const { history } = loadSiteData();
+const { history, projects, stats } = loadSiteData();
 const daily = [...(history.daily ?? [])].reverse();
 const events = [...(history.events ?? [])].reverse();
 const fmt = (iso) =>
-  iso ? new Date(iso).toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong', hour12: false }) : '—';
+  iso
+    ? new Date(iso).toLocaleString('zh-CN', {
+        timeZone: 'Asia/Hong_Kong',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+    : '—';
 const label = (status) => HEALTH_LABELS[status] ?? status;
 ---
 
-<Base title={site.history.title} description={site.history.description} active="history">
-  <div class="container">
-    <header class="page-head">
-      <h1>{site.history.title}</h1>
-      <p class="lede">
-        保留最近 180 天的每日汇总，以及最近 1000
-        条状态变化事件。只在状态真正变化时记录，因此文件不会随检查次数线性增长。
-      </p>
-    </header>
+<Base
+  title={site.history.title}
+  description={site.history.description}
+  active="history"
+  breadcrumb="历史记录"
+  counts={{
+    projects: projects.length,
+    monitored: stats.monitored,
+    online: stats.online,
+    attention: stats.attention,
+  }}
+>
+  <PageHead
+    title={site.history.title}
+    description="保留最近 180 天每日汇总与最近 1000 条状态变化；只在状态真正变化时记录。"
+  />
 
-    <section class="section" style="padding-top:0">
-      <div class="section-head">
-        <div>
-          <h2>可用率</h2>
-          <p>柱高为当日在线占比。</p>
-        </div>
-      </div>
-      <Sparkline {daily} />
-    </section>
+  <section class="card">
+    <div class="card-head">
+      <h2>可用率</h2>
+      <span class="card-sub">柱高为当日在线占比</span>
+    </div>
+    <div class="card-body card-body--flush" style="padding-top:var(--s4)">
+      <Sparkline daily={history.daily ?? []} />
+    </div>
+  </section>
 
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>每日汇总</h2>
-          <p>每天一条记录。</p>
-        </div>
+  <div class="grid grid--main" style="margin-top:var(--s4)">
+    <section class="card">
+      <div class="card-head">
+        <h2>每日汇总</h2>
+        <span class="card-sub">{daily.length} 天</span>
       </div>
       <div class="table-wrap">
         <table>
@@ -56,25 +72,23 @@ const label = (status) => HEALTH_LABELS[status] ?? status;
               <th scope="col" class="num">
                 离线
               </th>
-              <th scope="col" class="num">
-                不监控
-              </th>
             </tr>
           </thead>
           <tbody>
             {daily.length === 0 ? (
               <tr>
-                <td colspan="6">暂无数据</td>
+                <td colspan="5" class="empty">
+                  暂无数据
+                </td>
               </tr>
             ) : (
               daily.map((entry) => (
                 <tr>
-                  <td>{entry.date}</td>
+                  <td class="num">{entry.date}</td>
                   <td class="num">{entry.monitored}</td>
                   <td class="num">{entry.online}</td>
                   <td class="num">{entry.warning}</td>
                   <td class="num">{entry.offline}</td>
-                  <td class="num">{entry.notMonitored}</td>
                 </tr>
               ))
             )}
@@ -83,43 +97,35 @@ const label = (status) => HEALTH_LABELS[status] ?? status;
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
-        <div>
+    <aside class="stack">
+      <section class="card">
+        <div class="card-head">
           <h2>状态变化</h2>
-          <p>仅记录状态切换。</p>
+          <span class="card-sub">{events.length} 条</span>
         </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">时间</th>
-              <th scope="col">项目</th>
-              <th scope="col">变化</th>
-              <th scope="col">详情</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.length === 0 ? (
-              <tr>
-                <td colspan="4">尚无状态变化</td>
-              </tr>
-            ) : (
-              events.map((event) => (
-                <tr>
-                  <td>{fmt(event.at)}</td>
-                  <td>{event.fullName}</td>
-                  <td>
+        <div class="timeline">
+          {events.length === 0 ? (
+            <p class="empty">尚无状态变化。</p>
+          ) : (
+            events.slice(0, 30).map((event) => (
+              <div class="tl-item">
+                <span
+                  class={`tl-dot ${['online', 'recovered'].includes(event.to) ? 'tl-dot--ok' : event.to === 'offline' ? 'tl-dot--bad' : 'tl-dot--warn'}`}
+                  aria-hidden="true"
+                />
+                <div class="tl-body">
+                  <b>{event.fullName.split('/').pop()}</b>
+                  <span>
                     {label(event.from)} → {label(event.to)}
-                  </td>
-                  <td>{event.error ?? event.statusCode ?? '—'}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
+                    {event.error ? ` · ${event.error}` : ''}
+                  </span>
+                </div>
+                <span class="tl-time">{fmt(event.at)}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+    </aside>
   </div>
 </Base>

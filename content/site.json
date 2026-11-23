@@ -4,20 +4,23 @@
   "url": "https://weepwood.github.io/projects/",
   "locale": "zh-CN",
   "author": "weepwood",
-  "brand": { "mark": "✳", "name": "weepwood", "suffix": "." },
-  "nav": [
-    { "id": "home", "label": "作品集", "href": "/" },
-    { "id": "catalog", "label": "项目目录", "href": "/catalog/" },
-    { "id": "status", "label": "当前状态", "href": "/status/" },
-    { "id": "history", "label": "历史状态", "href": "/history/" }
-  ],
+  "brand": {
+    "mark": "✳",
+    "name": "weepwood",
+    "suffix": "."
+  },
+  "nav": [],
   "footer": "WEEPWOOD / PROJECT ARCHIVE",
   "home": {
     "kicker": "INDEPENDENT DEVELOPER PORTFOLIO",
-    "title": { "lead": "Project", "em": "Index", "suffix": "." },
-    "summary": "个人项目索引",
-    "summaryExtra": "工具、应用与创意实验。",
-    "primaryAction": "浏览项目目录",
+    "title": {
+      "lead": "项目档案",
+      "em": "",
+      "suffix": ""
+    },
+    "summary": "一个人维护的全部公开项目",
+    "summaryExtra": "代表作品、源码入口和在线状态集中在这一页，不用在几个页面之间找入口。",
+    "primaryAction": "浏览项目",
     "secondaryAction": "查看代表作"
   },
   "catalog": {

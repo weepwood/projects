@@ -11,8 +11,11 @@ import { createLogger } from '../lib/log.js';
 
 const log = createLogger('budget');
 
+// The dashboard carries what used to be four separate pages (featured work,
+// the full catalog, health mix, recent transitions, 180-day history), so its
+// budget is larger than a single-purpose page. It is still one gzipped request.
 const BUDGETS = {
-  'index.html': 12_000,
+  'index.html': 22_000,
   'catalog/index.html': 20_000,
   'status/index.html': 12_000,
   'history/index.html': 12_000,

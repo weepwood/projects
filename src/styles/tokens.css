@@ -1,86 +1,104 @@
 /*
- * Design tokens. Everything downstream uses these variables only.
- * Direction: restrained light — paper white, ink grey, one neutral accent.
- * No second accent, no gradients, no shadows heavier than a hairline.
+ * Design tokens. Dark-first workspace surfaces, one blue accent.
+ * Everything downstream reads these variables only — no raw hex in components.
  */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Surfaces */
-  --surface: #ffffff;
-  --surface-sunken: #fafafa;
-  --surface-raised: #ffffff;
+  /* Surfaces: three steps of elevation, all near-black with a blue cast. */
+  --bg: #08090b;
+  --surface: #101114;
+  --surface-2: #16181c;
+  --surface-3: #1d1f24;
+  --surface-hover: #22252b;
+
+  /* Hairlines. Borders carry the structure; shadows stay almost invisible. */
+  --line: #24262c;
+  --line-strong: #33363e;
 
   /* Ink */
-  --ink: #16181d;
-  --ink-secondary: #5c6270;
-  --ink-tertiary: #8b919d;
-  --ink-inverse: #ffffff;
+  --ink: #f4f5f7;
+  --ink-2: #a8adb8;
+  --ink-3: #9aa0ab;
+  --ink-4: #868b95;
 
-  /* Lines: one weight only. Hierarchy comes from ink, not from borders. */
-  --line: #e4e6ea;
-  --line-strong: #cfd3da;
+  /* One accent, plus its tinted wash for active states. */
+  --accent: #4d7cfe;
+  --accent-hover: #6a92ff;
+  --accent-wash: #16203a;
+  --accent-ink: #ffffff;
 
-  /* A single accent, used for links and the active nav rule. */
-  --accent: #2f4cff;
-  --accent-sunken: #eef1ff;
+  /* Status colours, used only for dots, pills and one data series at a time. */
+  --ok: #3ddc84;
+  --ok-wash: #10281c;
+  --warn: #f5b544;
+  --warn-wash: #2c2314;
+  --bad: #ff6b6b;
+  --bad-wash: #2c1618;
+  --idle: #71767f;
 
-  /* Semantic colours are only for status dots and badges. Never for decoration. */
-  --ok: #1a7f37;
-  --warn: #9a6700;
-  --bad: #cf222e;
-  --idle: #8b919d;
-
-  /* Type: one family per role, three sizes of scale. */
+  /* Type */
   --font-display:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
   --font-text: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
 
-  --step--2: 0.6875rem;
-  --step--1: 0.8125rem;
-  --step-0: 0.9375rem;
-  --step-1: 1.125rem;
-  --step-2: 1.5rem;
-  --step-3: clamp(1.875rem, 3vw, 2.5rem);
-  --step-4: clamp(2.5rem, 5.5vw, 3.75rem);
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(1.75rem, 2.4vw, 2.125rem);
+  --text-3xl: clamp(2.25rem, 4.2vw, 3.25rem);
 
-  /* Spacing: 4px base. */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 3rem;
-  --space-8: 4rem;
-  --space-9: 6rem;
+  /* Spacing, 4px base */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.25rem;
+  --s6: 1.5rem;
+  --s7: 2rem;
+  --s8: 2.5rem;
 
-  --radius: 6px;
-  --radius-sm: 4px;
-  --measure: 68ch;
-  --container: 1120px;
-  --header-h: 60px;
-  --transition: 120ms ease;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --sidebar: 236px;
+  --topbar-h: 60px;
+  --ease: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* A single soft inner highlight is the only "shadow" the UI uses. */
+  --card-sheen: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --card-glow: 0 0 0 1px rgb(255 255 255 / 0.02), 0 18px 40px -28px rgb(0 0 0 / 0.9);
 }
 
-/* Dark mode is opt-in by the toggle only: a portfolio is read on someone's
-   schedule, and following the OS makes screenshots of the site unpredictable. */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --surface: #101114;
-  --surface-sunken: #17181c;
-  --surface-raised: #17181c;
-  --ink: #f2f3f5;
-  --ink-secondary: #a5abb8;
-  --ink-tertiary: #737a88;
-  --ink-inverse: #101114;
-  --line: #25272d;
-  --line-strong: #363a42;
-  --accent: #8fa0ff;
-  --accent-sunken: #1b1f33;
-  --ok: #4ac26b;
-  --warn: #d4a72c;
-  --bad: #ff6b6b;
-  --idle: #737a88;
+/* Light theme: an explicit opt-in, so screenshots and reviews stay predictable. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fbfbfc;
+  --surface-3: #f2f3f5;
+  --surface-hover: #eef0f3;
+  --line: #e4e6ea;
+  --line-strong: #d2d6dd;
+  --ink: #12141a;
+  --ink-2: #565c68;
+  --ink-3: #6b7280;
+  --ink-4: #71767f;
+  --accent: #2f5bff;
+  --accent-hover: #1f47e8;
+  --accent-wash: #eaefff;
+  --accent-ink: #ffffff;
+  --ok: #107741;
+  --ok-wash: #e7f7ee;
+  --warn: #9a6700;
+  --warn-wash: #fdf4e3;
+  --bad: #cf222e;
+  --bad-wash: #fdeced;
+  --idle: #838995;
+  --card-sheen: none;
+  --card-glow: 0 1px 2px rgb(16 20 30 / 0.04), 0 12px 32px -24px rgb(16 20 30 / 0.35);
 }

@@ -30,50 +30,43 @@ const illustrationCaption =
 const title = frontmatter.title ?? project.featured.title;
 ---
 
-<Base title={title} description={frontmatter.summary ?? project.description} active="home">
-  <div class="container">
-    <article class="article">
-      <p class="eyebrow">项目笔记 / {project.categoryLabel}</p>
-      <h1>{title}</h1>
-      <p class="lede">{frontmatter.summary ?? project.description}</p>
+<Base title={title} description={frontmatter.summary ?? project.description} active="home" breadcrumb={title}>
+  <article class="article">
+    <p class="eyebrow">项目笔记 / {project.categoryLabel}</p>
+    <h1>{title}</h1>
+    <p class="lede">{frontmatter.summary ?? project.description}</p>
 
-      {(illustration || project.coverAvailable) && (
-        <figure>
-          <img
-            src={illustration ? asset(illustration) : asset(project.cover)}
-            alt={`${title} ${illustration ? '示意图' : '界面截图'}`}
-            loading="lazy"
-            width={illustration ? 400 : 1440}
-            height={illustration ? 300 : 900}
-          />
-          <figcaption>{illustrationCaption}</figcaption>
-        </figure>
-      )}
+    {(illustration || project.coverAvailable) && (
+      <figure>
+        <img
+          src={illustration ? asset(illustration) : asset(project.cover)}
+          alt={`${title} ${illustration ? '示意图' : '界面截图'}`}
+          loading="lazy"
+          width={illustration ? 400 : 1440}
+          height={illustration ? 300 : 900}
+        />
+        <figcaption>{illustrationCaption}</figcaption>
+      </figure>
+    )}
 
-      <div class="prose">
-        <Content />
-      </div>
+    <div class="prose">
+      <Content />
+    </div>
 
-      <div class="article-footer">
-        {project.repo && (
-          <a
-            class="btn btn--primary"
-            href={`${project.repo}#readme`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {project.featured.action} <Icon name="arrow-up-right" size={13} />
-          </a>
-        )}
-        {project.monitorHomepage && (
-          <a class="btn" href={project.homepage} target="_blank" rel="noopener noreferrer">
-            打开在线版本 ↗
-          </a>
-        )}
-        <a class="text-link" href={href('catalog/')}>
-          ← 回到项目目录
+    <div class="article-actions">
+      {project.repo && (
+        <a class="btn btn--primary" href={`${project.repo}#readme`} target="_blank" rel="noopener noreferrer">
+          {project.featured.action} <Icon name="arrow-up-right" size={13} />
         </a>
-      </div>
-    </article>
-  </div>
+      )}
+      {project.monitorHomepage && (
+        <a class="btn" href={project.homepage} target="_blank" rel="noopener noreferrer">
+          打开在线版本 ↗
+        </a>
+      )}
+      <a class="text-link" href={href('catalog/')}>
+        ← 回到项目目录
+      </a>
+    </div>
+  </article>
 </Base>

@@ -1,0 +1,75 @@
+---
+/**
+ * Health mix as a single donut plus a legend. Replaces the separate status page
+ * header: the numbers and the shape live in one card.
+ */
+const { stats } = Astro.props;
+
+const segments = [
+  { key: 'online', label: '正常', value: stats.online, colour: 'var(--ok)' },
+  { key: 'warning', label: '波动', value: stats.attention, colour: 'var(--warn)' },
+  {
+    key: 'unknown',
+    label: '未检查',
+    value: Math.max(0, stats.monitored - stats.online - stats.attention),
+    colour: 'var(--line-strong)',
+  },
+];
+
+const total = segments.reduce((sum, segment) => sum + segment.value, 0) || 1;
+const radius = 52;
+const circumference = 2 * Math.PI * radius;
+
+let offset = 0;
+const arcs = segments
+  .filter((segment) => segment.value > 0)
+  .map((segment) => {
+    const length = (segment.value / total) * circumference;
+    const arc = { ...segment, dash: `${length} ${circumference - length}`, offset: -offset };
+    offset += length;
+    return arc;
+  });
+
+const onlinePercent = Math.round((stats.online / total) * 100);
+---
+
+<div class="card">
+  <div class="card-head">
+    <h2>在线率</h2>
+    <span class="card-sub">{stats.monitored} 个监控网页</span>
+  </div>
+  <div class="card-body">
+    <div class="donut">
+      <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true">
+        <circle cx="66" cy="66" r={radius} fill="none" stroke="var(--surface-3)" stroke-width="10" />
+        {arcs.map((arc) => (
+          <circle
+            cx="66"
+            cy="66"
+            r={radius}
+            fill="none"
+            stroke={arc.colour}
+            stroke-width="10"
+            stroke-linecap="round"
+            stroke-dasharray={arc.dash}
+            stroke-dashoffset={arc.offset}
+          />
+        ))}
+      </svg>
+      <div class="donut-center">
+        <strong>{onlinePercent}%</strong>
+        <span>正常</span>
+      </div>
+    </div>
+
+    <div class="legend">
+      {segments.map((segment) => (
+        <div class="legend-row">
+          <span class="swatch" style={`background:${segment.colour}`} aria-hidden="true" />
+          {segment.label}
+          <b>{segment.value}</b>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
