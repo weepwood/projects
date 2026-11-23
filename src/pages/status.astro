@@ -5,7 +5,6 @@ import Status from '../components/Status.astro';
 import HealthMix from '../components/HealthMix.astro';
 import PageHead from '../components/PageHead.astro';
 import { loadSiteData, site } from '../data/site.js';
-import { href } from '../lib/paths.js';
 
 const { projects, stats, health } = loadSiteData();
 const monitored = projects
@@ -41,7 +40,6 @@ const fmt = (iso) =>
   title={site.status.title}
   description={site.status.description}
   active="status"
-  breadcrumb="在线状态"
   counts={{
     projects: projects.length,
     monitored: stats.monitored,
@@ -49,7 +47,12 @@ const fmt = (iso) =>
     attention: stats.attention,
   }}
 >
-  <PageHead title={site.status.title} description={`${site.status.description} Fork 项目不发起请求。`} />
+  <PageHead
+    index="03"
+    kicker="Monitor"
+    title={site.status.title}
+    description={`${site.status.description} Fork 项目不发起请求。`}
+  />
 
   {freshness ? (
     <div class={`notice ${stale ? '' : 'notice--calm'}`} role="status">
@@ -66,12 +69,13 @@ const fmt = (iso) =>
     </div>
   )}
 
-  <div class="grid grid--main" style="margin-top:var(--s4)">
+  <div class="grid grid--main">
     <section class="card">
       <div class="card-head">
         <h2>监控网页</h2>
         <span class="card-sub">{monitored.length} 个</span>
       </div>
+      <p class="table-hint">横向滑动查看完整表格 →</p>
       <div class="table-wrap">
         <table>
           <caption class="visually-hidden">各项目当前在线状态</caption>

@@ -21,6 +21,7 @@ const freshness = Number.isFinite(ageHours)
     ? '不到 1 小时前'
     : `${Math.round(ageHours)} 小时前`
   : '尚未检查';
+const freshnessTone = !checkedAt ? '' : ageHours < 12 ? 'dot--ok' : 'dot--warn';
 
 const statuses = [...new Set(projects.map((project) => project.health.status))];
 const categories = [...new Set(projects.map((project) => project.category))];
@@ -65,72 +66,74 @@ const activityBars = recentDaily.map((entry) =>
   }}
 >
   <section class="hero">
-    <div class="hero-grid">
-      <div>
-        <span class="eyebrow">{freshness === '尚未检查' ? home.kicker : `状态更新于 ${freshness}`}</span>
-        <h1>
-          {home.title.lead} <em>{home.title.em}</em>
-          {home.title.suffix}
-        </h1>
-        <p class="lede">
-          {home.summary} — {home.summaryExtra}
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn--primary" href="#catalog">
-            <Icon name="list-filter" size={15} /> 浏览 {projects.length} 个项目
-          </a>
-          <a class="btn" href={href('status/')}>
-            <Icon name="activity" size={15} /> 在线状态
-          </a>
-          <a class="btn btn--ghost" href="#featured">
-            代表作 <Icon name="arrow-down" size={13} />
-          </a>
-        </div>
-      </div>
-
-      <div class="hero-stack">
-        <div class="tiles">
-          <Tile
-            label="收录项目"
-            value={projects.length}
-            icon="boxes"
-            meta={`${stats.forks} 个 Fork 不访问`}
-          />
-          <Tile label="监控网页" value={stats.monitored} icon="radio" meta={`${stats.online} 个正常`} />
-          <Tile
-            label="需关注"
-            value={stats.attention}
-            icon="triangle-alert"
-            meta={stats.attention ? '<b class="is-warn">有站点异常</b>' : '<b>全部正常</b>'}
-          />
-          <Tile
-            label="最近检查"
-            value={checkedAt ? freshness.replace('前', '') : '—'}
-            icon="clock"
-            meta="时区 HKT"
-          />
-        </div>
-      </div>
+    <div class="hero-top">
+      <p class="kicker">{home.kicker}</p>
+      <p class="kicker hero-freshness">
+        <span class={`dot ${freshnessTone}`} aria-hidden="true" />
+        {freshness === '尚未检查' ? '尚未检查' : `状态更新于 ${freshness}`}
+      </p>
+    </div>
+    <h1>
+      {home.title.lead}
+      <span class="accent">.</span>
+    </h1>
+    <p class="lede">
+      {home.summary} — {home.summaryExtra}
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn--primary" href="#catalog">
+        <Icon name="list-filter" size={14} /> 浏览 {projects.length} 个项目
+      </a>
+      <a class="btn" href={href('status/')}>
+        <Icon name="activity" size={14} /> 在线状态
+      </a>
+      <a class="btn btn--ghost" href="#featured">
+        代表作品 <Icon name="arrow-down" size={13} />
+      </a>
     </div>
   </section>
 
-  <div class="grid grid--main">
-    <div class="stack">
-      <section id="featured">
-        <FeaturedList projects={featured} />
-      </section>
+  <div class="tiles">
+    <Tile label="收录项目" value={projects.length} meta={`${stats.forks} 个 Fork 不访问`} />
+    <Tile label="监控网页" value={stats.monitored} meta={`${stats.online} 个正常`} />
+    <Tile
+      label="需关注"
+      value={stats.attention}
+      meta={stats.attention ? '<b class="is-warn">有站点异常</b>' : '<b>全部正常</b>'}
+    />
+    <Tile label="最近检查" value={checkedAt ? freshness.replace('前', '') : '—'} meta="时区 HKT" />
+  </div>
 
-      <section class="card" id="catalog">
-        <div class="card-head">
-          <h2>全部项目</h2>
-          <span class="card-sub">搜索、筛选与排序都在这里</span>
-          <div class="card-actions">
-            <a class="btn btn--ghost btn--sm" href={href('catalog/')}>
-              独立目录页 <Icon name="arrow-up-right" size={13} />
-            </a>
-          </div>
+  <section id="featured" class="section">
+    <div class="section-head">
+      <div>
+        <p class="kicker">
+          <span class="accent">01</span> / Selected work
+        </p>
+        <h2>代表作品</h2>
+      </div>
+      <p class="section-note">长期维护、有明确使用场景</p>
+    </div>
+    <FeaturedList projects={featured} />
+  </section>
+
+  <div class="home-grid">
+    <section id="catalog" class="section">
+      <div class="section-head">
+        <div>
+          <p class="kicker">
+            <span class="accent">02</span> / Index
+          </p>
+          <h2>
+            全部项目 <span class="count">{projects.length}</span>
+          </h2>
         </div>
+        <a class="text-link" href={href('catalog/')}>
+          独立目录页 <Icon name="arrow-up-right" size={12} />
+        </a>
+      </div>
 
+      <div class="catalog-panel">
         <CatalogFilter {categories} {categoryLabels} {statuses} />
 
         <div class="toolbar-meta">
@@ -142,7 +145,7 @@ const activityBars = recentDaily.map((entry) =>
           </button>
         </div>
 
-        <ul class="rows" id="catalog-list">
+        <ul class="rows rows--index" id="catalog-list">
           {projects.map((project) => (
             <ProjectRow project={project} />
           ))}
@@ -155,8 +158,8 @@ const activityBars = recentDaily.map((entry) =>
         <noscript>
           <p class="empty">筛选与排序需要 JavaScript，但上方列表在禁用 JavaScript 时依然完整可读。</p>
         </noscript>
-      </section>
-    </div>
+      </div>
+    </section>
 
     <aside class="stack" aria-label="副栏">
       <HealthMix {stats} />
@@ -243,15 +246,22 @@ const activityBars = recentDaily.map((entry) =>
     </aside>
   </div>
 
-  <section class="section-title">
-    <h2>近 180 天可用率</h2>
-    <p>
-      柱高为当日在线占比 · <a href={href('history/')}>查看每日明细</a>
-    </p>
-  </section>
-  <section class="card">
-    <div class="card-body card-body--flush" style="padding-top:var(--s4)">
-      <Sparkline daily={history.daily ?? []} />
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <p class="kicker">
+          <span class="accent">03</span> / Uptime
+        </p>
+        <h2>近 180 天可用率</h2>
+      </div>
+      <p class="section-note">
+        柱高为当日在线占比 · <a href={href('history/')}>查看每日明细</a>
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-body card-body--flush">
+        <Sparkline daily={history.daily ?? []} />
+      </div>
     </div>
   </section>
 </Base>
