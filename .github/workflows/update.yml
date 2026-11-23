@@ -98,8 +98,11 @@ jobs:
       - name: Check project health
         run: npm run health
 
+      # Notification bookkeeping must never block a deploy: a rate limit or a
+      # GitHub hiccup here used to fail the whole run and leave the site stale.
       - name: Synchronize offline issues
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         run: npm run issues:sync
 
       - name: Build site

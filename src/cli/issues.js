@@ -26,10 +26,24 @@ async function api(pathname, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
-async function findOpenIssue(title) {
-  const query = encodeURIComponent(`repo:${OWNER}/${REPO} is:issue is:open in:title "${title}"`);
-  const result = await api(`/search/issues?q=${query}`);
-  return result?.items?.[0] ?? null;
+/**
+ * Open issues keyed by title. One list request replaces one search request per
+ * project: the Search API allows 30 requests/minute per user, so a 49-project
+ * loop guaranteed a 403 on every scheduled run.
+ */
+async function listOpenIssues() {
+  const open = new Map();
+  for (let page = 1; page <= 5; page += 1) {
+    const batch = await api(`/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&page=${page}`);
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    for (const issue of batch) {
+      // The issues endpoint also returns pull requests.
+      if (issue.pull_request) continue;
+      open.set(issue.title, issue);
+    }
+    if (batch.length < 100) break;
+  }
+  return open;
 }
 
 async function main() {
@@ -40,6 +54,7 @@ async function main() {
 
   const projects = requireJson('.cache/enriched.json', 'npm run enrich');
   const health = readJson('.cache/health.json', { projects: {} });
+  const openIssues = await listOpenIssues();
   let opened = 0;
   let closed = 0;
 
@@ -49,7 +64,7 @@ async function main() {
     if (!item) continue;
 
     const title = `[Site Offline] ${project.fullName}`;
-    const existing = await findOpenIssue(title);
+    const existing = openIssues.get(title) ?? null;
 
     if (item.status === 'offline' && !existing) {
       await api(`/repos/${OWNER}/${REPO}/issues`, {
@@ -70,6 +85,7 @@ async function main() {
         }),
       });
       opened += 1;
+      openIssues.set(title, { title });
       log.info(`新建 Issue：${project.fullName}`);
     } else if (existing && ['online', 'recovered'].includes(item.status)) {
       await api(`/repos/${OWNER}/${REPO}/issues/${existing.number}`, {
@@ -77,6 +93,7 @@ async function main() {
         body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
       });
       closed += 1;
+      openIssues.delete(title);
       log.info(`关闭 Issue：${project.fullName}`);
     }
   }
