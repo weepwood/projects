@@ -7,32 +7,39 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--topbar-h) + var(--s4));
+  scroll-padding-top: calc(var(--masthead-h) + var(--s4));
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-text);
   font-size: var(--text-base);
-  line-height: 1.6;
+  line-height: 1.65;
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* The only ambient decoration in the whole UI: a single cool wash behind the
-   workspace, so near-black does not read as an empty void. */
+/* The only ambient tone: a faint warm wash at the top of the sheet, so the
+   paper reads as material rather than a flat #hex. */
 body::before {
   content: '';
   position: fixed;
   inset: 0 0 auto 0;
-  height: 640px;
+  height: 520px;
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(680px 320px at 18% -8%, rgb(77 124 254 / 0.16), transparent 70%),
-    radial-gradient(520px 260px at 78% -12%, rgb(120 90 255 / 0.1), transparent 72%);
+    radial-gradient(
+      720px 320px at 18% -12%,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(560px 260px at 82% -16%, color-mix(in srgb, var(--ink) 3%, transparent), transparent 72%);
 }
 
 h1,
@@ -40,9 +47,9 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: -0.02em;
-  line-height: 1.25;
+  line-height: 1.15;
   margin: 0;
   text-wrap: balance;
 }
@@ -58,7 +65,7 @@ a {
 }
 
 a:hover {
-  color: var(--accent-hover);
+  color: var(--accent);
 }
 
 img,
@@ -81,21 +88,21 @@ select {
   color: inherit;
 }
 
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-::selection {
-  background: var(--accent);
-  color: #fff;
-}
-
-/* Scrollbars inside the app shell: visible on hover, quiet at rest. */
+/* Thin, quiet scrollbars inside the document. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-color: var(--rule-strong) transparent;
 }
 
 .visually-hidden {
@@ -113,12 +120,14 @@ select {
 .skip-link {
   position: absolute;
   left: var(--s4);
-  top: -60px;
+  top: -80px;
   z-index: 200;
   padding: var(--s2) var(--s4);
-  background: var(--surface-3);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
   transition: top var(--ease);
 }
 

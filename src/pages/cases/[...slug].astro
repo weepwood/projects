@@ -30,8 +30,11 @@ const illustrationCaption =
 const title = frontmatter.title ?? project.featured.title;
 ---
 
-<Base title={title} description={frontmatter.summary ?? project.description} active="home" breadcrumb={title}>
+<Base title={title} description={frontmatter.summary ?? project.description} active="catalog">
   <article class="article">
+    <a class="text-link article-back" href={href('catalog/')}>
+      <Icon name="arrow-left" size={13} /> 项目目录
+    </a>
     <p class="eyebrow">项目笔记 / {project.categoryLabel}</p>
     <h1>{title}</h1>
     <p class="lede">{frontmatter.summary ?? project.description}</p>

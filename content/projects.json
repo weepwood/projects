@@ -26,7 +26,7 @@
       "audience": "经常同时查阅多组资料的 Chrome 和 Edge 用户。",
       "approach": "在工作台按域名整理标签页，保存当前窗口或全部窗口。恢复会话时使用新窗口，不打乱手头的工作。",
       "action": "查看扩展说明",
-      "poster": { "kind": "browser", "tone": "paper", "caption": "Workspace" }
+      "poster": { "kind": "browser", "tone": "paper", "caption": "Workspace", "asset": "assets/ATab.svg" }
     },
     {
       "fullName": "weepwood/LocalLens",
@@ -37,7 +37,7 @@
       "audience": "希望自己保管原片，又想在不同设备上浏览媒体的人。",
       "approach": "Windows 端为选定文件夹建立本地索引、缩略图和虚拟分类；Android 设备通过局域网配对浏览。",
       "action": "查看安装说明",
-      "poster": { "kind": "lens", "tone": "sand", "caption": "Library" }
+      "poster": { "kind": "lens", "tone": "sand", "caption": "Library", "asset": "assets/LocalLens.svg" }
     }
   ],
   "overrides": {

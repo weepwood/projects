@@ -1,58 +1,64 @@
 /*
- * Design tokens. Dark-first workspace surfaces, one blue accent.
- * Everything downstream reads these variables only — no raw hex in components.
+ * Design tokens — "Archive Index".
+ *
+ * The site reads like a printed index of works: warm paper, near-black ink,
+ * hairline rules, one vermillion accent. Colour never carries meaning except
+ * the three status tones, which are reserved for health dots and pills.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Surfaces: three steps of elevation, all near-black with a blue cast. */
-  --bg: #08090b;
-  --surface: #101114;
-  --surface-2: #16181c;
-  --surface-3: #1d1f24;
-  --surface-hover: #22252b;
+  /* Paper and ink */
+  --paper: #f7f4ed;
+  --paper-2: #fbf9f3;
+  --paper-3: #efeade;
+  --paper-hover: #eae4d6;
 
-  /* Hairlines. Borders carry the structure; shadows stay almost invisible. */
-  --line: #24262c;
-  --line-strong: #33363e;
+  --ink: #1c1a15;
+  --ink-2: #4d483d;
+  --ink-3: #6d6759;
+  --ink-4: #8a8374;
 
-  /* Ink */
-  --ink: #f4f5f7;
-  --ink-2: #a8adb8;
-  --ink-3: #9aa0ab;
-  --ink-4: #868b95;
+  --rule: #d9d2c2;
+  --rule-strong: #b6ad9a;
 
-  /* One accent, plus its tinted wash for active states. */
-  --accent: #4d7cfe;
-  --accent-hover: #6a92ff;
-  --accent-wash: #16203a;
-  --accent-ink: #ffffff;
+  /* One accent */
+  --accent: #b23f27;
+  --accent-hover: #8f2f1b;
+  --accent-wash: #f4e3dc;
+  --accent-ink: #fffaf5;
 
-  /* Status colours, used only for dots, pills and one data series at a time. */
-  --ok: #3ddc84;
-  --ok-wash: #10281c;
-  --warn: #f5b544;
-  --warn-wash: #2c2314;
-  --bad: #ff6b6b;
-  --bad-wash: #2c1618;
-  --idle: #71767f;
+  /* Status only */
+  --ok: #2e6a44;
+  --ok-wash: #e6f0e8;
+  --warn: #8a6100;
+  --warn-wash: #f7edd6;
+  --bad: #a5281f;
+  --bad-wash: #f6e4e1;
+  --idle: #8a8374;
 
-  /* Type */
+  --focus: #b23f27;
+
+  /* Type: serif for display, sans for reading, mono for facts */
   --font-display:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
-  --font-text: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', sans-serif;
-  --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+    Georgia, 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'Times New Roman', serif;
+  --font-text:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC',
+    'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 
-  --text-xs: 0.6875rem;
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
-  --text-base: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: clamp(1.75rem, 2.4vw, 2.125rem);
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
+  --text-2xl: clamp(1.75rem, 2.6vw, 2.25rem);
   --text-3xl: clamp(2.25rem, 4.2vw, 3.25rem);
+  --text-hero: clamp(3.25rem, 7.5vw, 6rem);
 
-  /* Spacing, 4px base */
+  /* 4px spacing scale */
   --s1: 0.25rem;
   --s2: 0.5rem;
   --s3: 0.75rem;
@@ -61,44 +67,55 @@
   --s6: 1.5rem;
   --s7: 2rem;
   --s8: 2.5rem;
+  --s9: 3.5rem;
+  --s10: 5rem;
 
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --sidebar: 236px;
-  --topbar-h: 60px;
-  --ease: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Editorial geometry: hairlines, square corners, no elevation */
+  --radius-sm: 2px;
+  --radius: 2px;
+  --radius-lg: 3px;
+  --rule-w: 1px;
 
-  /* A single soft inner highlight is the only "shadow" the UI uses. */
-  --card-sheen: inset 0 1px 0 rgb(255 255 255 / 0.04);
-  --card-glow: 0 0 0 1px rgb(255 255 255 / 0.02), 0 18px 40px -28px rgb(0 0 0 / 0.9);
+  --maxw: 1240px;
+  --gutter: clamp(1rem, 3.2vw, 2.5rem);
+  --masthead-h: 64px;
+  --measure: 62ch;
+  --ease: 160ms cubic-bezier(0.2, 0.6, 0.2, 1);
+
+  /* Kept as named hooks so component CSS never grows ad-hoc shadows. */
+  --card-sheen: none;
+  --card-glow: none;
 }
 
-/* Light theme: an explicit opt-in, so screenshots and reviews stay predictable. */
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #fbfbfc;
-  --surface-3: #f2f3f5;
-  --surface-hover: #eef0f3;
-  --line: #e4e6ea;
-  --line-strong: #d2d6dd;
-  --ink: #12141a;
-  --ink-2: #565c68;
-  --ink-3: #6b7280;
-  --ink-4: #71767f;
-  --accent: #2f5bff;
-  --accent-hover: #1f47e8;
-  --accent-wash: #eaefff;
-  --accent-ink: #ffffff;
-  --ok: #107741;
-  --ok-wash: #e7f7ee;
-  --warn: #9a6700;
-  --warn-wash: #fdf4e3;
-  --bad: #cf222e;
-  --bad-wash: #fdeced;
-  --idle: #838995;
-  --card-sheen: none;
-  --card-glow: 0 1px 2px rgb(16 20 30 / 0.04), 0 12px 32px -24px rgb(16 20 30 / 0.35);
+/* Night edition: the same document printed on charcoal stock. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --paper: #15140f;
+  --paper-2: #1b1a15;
+  --paper-3: #22211a;
+  --paper-hover: #27251d;
+
+  --ink: #f2eee2;
+  --ink-2: #c6c0b0;
+  --ink-3: #a49d8b;
+  --ink-4: #7f796a;
+
+  --rule: #322f26;
+  --rule-strong: #4a4639;
+
+  --accent: #e06a4b;
+  --accent-hover: #ef7d5f;
+  --accent-wash: #2a1e18;
+  --accent-ink: #1a120e;
+
+  --ok: #78c08f;
+  --ok-wash: #1a281e;
+  --warn: #d9ab52;
+  --warn-wash: #2a2416;
+  --bad: #e57a6f;
+  --bad-wash: #2d1c19;
+  --idle: #7f796a;
+
+  --focus: #e06a4b;
 }

@@ -26,7 +26,6 @@ const label = (status) => HEALTH_LABELS[status] ?? status;
   title={site.history.title}
   description={site.history.description}
   active="history"
-  breadcrumb="历史记录"
   counts={{
     projects: projects.length,
     monitored: stats.monitored,
@@ -35,6 +34,8 @@ const label = (status) => HEALTH_LABELS[status] ?? status;
   }}
 >
   <PageHead
+    index="04"
+    kicker="Archive"
     title={site.history.title}
     description="保留最近 180 天每日汇总与最近 1000 条状态变化；只在状态真正变化时记录。"
   />
@@ -44,19 +45,21 @@ const label = (status) => HEALTH_LABELS[status] ?? status;
       <h2>可用率</h2>
       <span class="card-sub">柱高为当日在线占比</span>
     </div>
-    <div class="card-body card-body--flush" style="padding-top:var(--s4)">
+    <div class="card-body card-body--flush">
       <Sparkline daily={history.daily ?? []} />
     </div>
   </section>
 
-  <div class="grid grid--main" style="margin-top:var(--s4)">
+  <div class="grid grid--main">
     <section class="card">
       <div class="card-head">
         <h2>每日汇总</h2>
         <span class="card-sub">{daily.length} 天</span>
       </div>
+      <p class="table-hint">横向滑动查看完整表格 →</p>
       <div class="table-wrap">
         <table>
+          <caption class="visually-hidden">每日在线汇总</caption>
           <thead>
             <tr>
               <th scope="col">日期</th>

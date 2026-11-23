@@ -12,7 +12,7 @@ const segments = [
     key: 'unknown',
     label: '未检查',
     value: Math.max(0, stats.monitored - stats.online - stats.attention),
-    colour: 'var(--line-strong)',
+    colour: 'var(--rule-strong)',
   },
 ];
 
@@ -41,7 +41,7 @@ const onlinePercent = Math.round((stats.online / total) * 100);
   <div class="card-body">
     <div class="donut">
       <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true">
-        <circle cx="66" cy="66" r={radius} fill="none" stroke="var(--surface-3)" stroke-width="10" />
+        <circle cx="66" cy="66" r={radius} fill="none" stroke="var(--paper-3)" stroke-width="10" />
         {arcs.map((arc) => (
           <circle
             cx="66"

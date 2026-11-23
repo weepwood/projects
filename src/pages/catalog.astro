@@ -15,7 +15,6 @@ const categoryLabels = Object.fromEntries(projects.map((p) => [p.category, p.cat
   title={site.catalog.title}
   description={site.catalog.description}
   active="catalog"
-  breadcrumb="全部项目"
   counts={{
     projects: projects.length,
     monitored: stats.monitored,
@@ -24,11 +23,13 @@ const categoryLabels = Object.fromEntries(projects.map((p) => [p.category, p.cat
   }}
 >
   <PageHead
+    index="02"
+    kicker="Catalog"
     title={site.catalog.title}
     description={`${site.catalog.description} 共 ${projects.length} 个项目。`}
   />
 
-  <section class="card">
+  <section class="catalog-panel">
     <CatalogFilter {categories} {categoryLabels} {statuses} />
 
     <div class="toolbar-meta">
@@ -40,7 +41,7 @@ const categoryLabels = Object.fromEntries(projects.map((p) => [p.category, p.cat
       </button>
     </div>
 
-    <ul class="rows" id="catalog-list">
+    <ul class="rows rows--index" id="catalog-list">
       {projects.map((project) => (
         <ProjectRow project={project} />
       ))}

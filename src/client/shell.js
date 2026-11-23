@@ -1,21 +1,21 @@
 /**
- * App-shell behaviour: theme toggle and the mobile navigation drawer. Kept
- * deliberately small — everything else on the site is server-rendered.
+ * App-shell behaviour: theme toggle and the mobile table of contents.
+ * Kept deliberately small — everything else on the site is server-rendered.
  */
 const root = document.documentElement;
-const app = document.getElementById('app');
 const themeButton = document.getElementById('theme-toggle');
-const toggle = document.getElementById('sidebar-toggle');
+const nav = document.getElementById('site-nav');
+const navToggle = document.getElementById('nav-toggle');
 
 const syncTheme = () => {
-  const dark = root.dataset.theme !== 'light';
+  const dark = root.dataset.theme === 'dark';
   themeButton?.setAttribute('aria-pressed', String(dark));
   themeButton?.setAttribute('aria-label', dark ? '切换到浅色主题' : '切换到深色主题');
 };
 
 syncTheme();
 themeButton?.addEventListener('click', () => {
-  const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
   root.dataset.theme = next;
   try {
     localStorage.setItem('theme', next);
@@ -23,25 +23,21 @@ themeButton?.addEventListener('click', () => {
   syncTheme();
 });
 
-const setSidebar = (open) => {
-  if (!app) return;
-  app.dataset.sidebar = open ? 'open' : 'closed';
-  toggle?.setAttribute('aria-expanded', String(open));
-  toggle?.setAttribute('aria-label', open ? '关闭导航' : '打开导航');
+const setNav = (open) => {
+  if (!nav || !navToggle) return;
+  nav.classList.toggle('is-open', open);
+  navToggle.setAttribute('aria-expanded', String(open));
+  navToggle.setAttribute('aria-label', open ? '关闭目录' : '打开目录');
+  const label = navToggle.querySelector('span');
+  if (label) label.textContent = open ? '关闭' : '目录';
 };
 
-toggle?.addEventListener('click', () => {
-  setSidebar(app?.dataset.sidebar !== 'open');
+navToggle?.addEventListener('click', () => setNav(!nav?.classList.contains('is-open')));
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') setNav(false);
 });
 
-// Clicking the scrim or pressing Escape closes the drawer; following a link
-// closes it too, otherwise the new page appears behind an open drawer.
-app?.addEventListener('click', (event) => {
-  if (event.target === app) setSidebar(false);
-});
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') setSidebar(false);
-});
-app?.querySelectorAll('.sidebar a').forEach((link) => {
-  link.addEventListener('click', () => setSidebar(false));
+nav?.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', () => setNav(false));
 });
