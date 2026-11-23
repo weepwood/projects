@@ -1,0 +1,20 @@
+---
+import Icon from './Icon.astro';
+import { href } from '../lib/paths.js';
+
+/**
+ * Page header for the drill-down pages. The dashboard is the entry point, so
+ * every sub-page offers one obvious way back and states what it contains.
+ */
+const { title, description, back = '回到总览' } = Astro.props;
+---
+
+<header class="page-head">
+  <div>
+    <h1>{title}</h1>
+    <p>{description}</p>
+  </div>
+  <a class="btn btn--ghost btn--sm" href={href()}>
+    <Icon name="arrow-left" size={13} /> {back}
+  </a>
+</header>

@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+
+const { label, value, meta, icon, href, bars = null, suffix = null } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag class="tile" href={href}>
+  <span class="tile-label">
+    {icon && <Icon name={icon} size={13} />}
+    {label}
+  </span>
+  <span class="tile-value">
+    {value}
+    {suffix && <small>{suffix}</small>}
+  </span>
+  {meta && <span class="tile-meta" set:html={meta} />}
+  {bars && (
+    <span class="tile-bars" aria-hidden="true">
+      {bars.map((height) => (
+        <i style={`height:${Math.max(6, height)}%`} />
+      ))}
+    </span>
+  )}
+</Tag>

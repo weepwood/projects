@@ -21,11 +21,11 @@ content/                 人工维护的内容与意图（唯一事实来源）
 src/
   lib/                   纯函数领域层（URL、分类、健康状态机、截图策略、合并）
   data/site.js           只读数据装载：合并 enriched + health + 人工内容
-  components/ layouts/   Astro 组件与版式
+  components/ layouts/   Astro 组件与版式（Base.astro 提供侧栏 + 顶栏的应用外壳）
   pages/                 路由（/、/catalog、/status、/history、/cases/*、/feed.xml、404）
   client/                仅两个约 1 KB 的客户端脚本：主题、目录筛选
   cli/                   enrich / health / screenshots / issues / budget / pipeline
-  styles/                tokens → base → layout → components
+  styles/                tokens → base → layout → components（深色优先，浅色可切换）
 public/                  favicon、OG 图、robots、装饰 SVG
 assets/lucide/           Lucide 图标子集（构建期内联）
 dist/                   构建产物，已 gitignore
@@ -34,11 +34,15 @@ dist/                   构建产物，已 gitignore
 
 ## 页面
 
-- `/`：代表作品与目录入口。
-- `/catalog/`：全部项目。服务端渲染完整列表，筛选与排序只切换 DOM 行。
-- `/status/`：当前状态、HTTP 状态码、响应时间和最后检查时间，附数据新鲜度提示。
-- `/history/`：最近 180 天可用率与每日汇总，以及最近 1000 条状态变化事件。
+界面是一个统一的工作台：左侧固定侧栏说明每个入口是什么，右侧是内容区。
+
+- `/`：**总览**。唯一的入口页——统计卡片、代表作品、全部项目（搜索/筛选/排序）、在线率、需关注列表、最近状态变化、180 天可用率都在这里。
+- `/catalog/`：完整目录页，供直接链接或深链使用；与总览共用同一套服务端渲染行 + DOM 筛选。
+- `/status/`：监控表格（HTTP、响应时间、检查时间），按异常程度排序。
+- `/history/`：每日汇总与状态变化时间线。
 - `/cases/<仓库名>/`：代表作的用途、使用流程与文档。
+
+各子页面顶部都有「回到总览」，避免出现只能靠浏览器后退才能离开的页面。
 
 ## 本地开发
 
@@ -105,7 +109,14 @@ Fork 仓库仍可作为项目记录展示，但自动化不会访问它的 Homep
 
 ## 界面图标
 
-界面使用 Lucide 0.468.0 的本地图标子集（见 `assets/lucide/LICENSE`）。`src/components/Icon.astro` 在构建期内联 SVG，不需要 CDN 或浏览器端图标脚本。
+界面使用 Lucide 1.78.0 的本地图标子集（见 `assets/lucide/LICENSE`，仅拷贝实际用到的 SVG）。`src/components/Icon.astro` 在构建期内联 SVG，不需要 CDN 或浏览器端图标脚本。新增图标时从 `lucide-static/icons/` 复制到 `assets/lucide/`。
+
+## 设计约定
+
+- **一个外壳**：所有页面共用 `layouts/Base.astro`（侧栏 + 顶栏），入口只出现在侧栏，不在正文里再造导航。
+- **深色优先**：默认深色，`localStorage` 记住选择；浅色是显式切换，不跟随系统，保证截图与评审可复现。
+- **对比度**：正文与次要文字在两套主题下均 ≥ 4.5:1，`npm test` 之外可用 `node /tmp/contrast.cjs` 的方式复核；色板只在 `tokens.css` 定义。
+- **状态色只用于状态**：绿/黄/红只出现在状态点、胶囊和时间线，不用于装饰。
 
 ## 重构记录
 

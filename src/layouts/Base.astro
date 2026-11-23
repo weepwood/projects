@@ -10,12 +10,30 @@ const {
   active = '',
   image = '/og.svg',
   noindex = false,
+  breadcrumb = null,
+  counts = {},
 } = Astro.props;
 
 const pageTitle = active === 'home' ? `${site.title} · 项目索引` : `${title} · ${site.title}`;
-// Astro.url already carries the configured base and trailing-slash style.
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const ogImage = new URL(image, site.url).href;
+
+// Navigation is grouped so every entry point states what it is. The dashboard is
+// the one place that shows everything; the other pages are drill-downs from it.
+const groups = [
+  {
+    label: '工作台',
+    items: [{ id: 'home', label: '总览', icon: 'panels-top-left', href: '', count: null }],
+  },
+  {
+    label: '档案',
+    items: [
+      { id: 'catalog', label: '全部项目', icon: 'library', href: 'catalog/', count: counts.projects },
+      { id: 'status', label: '在线状态', icon: 'activity', href: 'status/', count: null },
+      { id: 'history', label: '历史记录', icon: 'history', href: 'history/', count: null },
+    ],
+  },
+];
 ---
 
 <!doctype html>
@@ -49,17 +67,10 @@ const ogImage = new URL(image, site.url).href;
     <meta name="twitter:image" content={ogImage} />
 
     <script is:inline>
-      // Runs before first paint so a returning dark-mode reader never sees a white flash.
+      // Applies the saved theme before first paint so there is no flash.
       try {
         const saved = localStorage.getItem('theme');
         if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
-        const dark = document.documentElement.dataset.theme === 'dark';
-        const mark = (el) => {
-          if (!el) return;
-          el.setAttribute('aria-pressed', String(dark));
-          el.setAttribute('aria-label', dark ? '切换到浅色模式' : '切换到深色模式');
-        };
-        document.addEventListener('DOMContentLoaded', () => mark(document.getElementById('theme-toggle')));
       } catch {}
     </script>
   </head>
@@ -68,50 +79,105 @@ const ogImage = new URL(image, site.url).href;
       跳到主要内容
     </a>
 
-    <header class="site-header">
-      <div class="container">
+    <div class="app" id="app">
+      <aside class="sidebar" id="sidebar">
         <a class="brand" href={href()}>
-          <span class="mark" aria-hidden="true">
+          <span class="brand-mark" aria-hidden="true">
             {site.brand.mark}
           </span>
-          {site.brand.name}
-          <span class="suffix">{site.brand.suffix}</span>
+          <span class="brand-text">
+            <strong>{site.brand.name}</strong>
+            <span>项目档案</span>
+          </span>
         </a>
-        <nav class="site-nav" aria-label="主导航">
-          {site.nav.map((item) => (
-            <a
-              href={href(item.href.replace(/^\//, ''))}
-              aria-current={active === item.id ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
+
+        <nav aria-label="主导航">
+          {groups.map((group) => (
+            <div class="nav-group">
+              <p class="nav-label">{group.label}</p>
+              {group.items.map((item) => (
+                <a
+                  class="nav-item"
+                  href={href(item.href)}
+                  aria-current={active === item.id ? 'page' : undefined}
+                >
+                  <Icon name={item.icon} size={15} />
+                  {item.label}
+                  {typeof item.count === 'number' ? <span class="nav-count">{item.count}</span> : null}
+                </a>
+              ))}
+            </div>
           ))}
-          <button
-            class="theme-toggle"
-            type="button"
-            id="theme-toggle"
-            aria-label="切换深色模式"
-            aria-pressed="false"
-          >
-            <Icon name="sun-moon" size={15} />
-          </button>
         </nav>
-      </div>
-    </header>
 
-    <main id="main">
-      <slot />
-    </main>
+        <div class="sidebar-facts">
+          <h2>档案事实</h2>
+          <div class="fact-row">
+            <span>收录项目</span>
+            <strong>{counts.projects ?? '—'}</strong>
+          </div>
+          <div class="fact-row">
+            <span>监控网页</span>
+            <strong>{counts.monitored ?? '—'}</strong>
+          </div>
+          <div class="fact-row">
+            <span>当前正常</span>
+            <strong class={counts.attention ? 'is-warn' : undefined}>{counts.online ?? '—'}</strong>
+          </div>
+          <div class="fact-row">
+            <span>需关注</span>
+            <strong class={counts.attention ? 'is-warn' : undefined}>{counts.attention ?? 0}</strong>
+          </div>
+        </div>
+      </aside>
 
-    <footer class="site-footer">
-      <div class="container">
-        <span>{site.footer}</span>
-        <span>{site.author}</span>
+      <div class="workspace">
+        <header class="topbar">
+          <button
+            class="sidebar-toggle"
+            type="button"
+            id="sidebar-toggle"
+            aria-label="打开导航"
+            aria-expanded="false"
+            aria-controls="sidebar"
+          >
+            <Icon name="panels-top-left" size={16} />
+          </button>
+
+          <div class="crumbs">
+            <a href={href()}>工作台</a>
+            {breadcrumb && (
+              <>
+                <span aria-hidden="true">/</span>
+                <b>{breadcrumb}</b>
+              </>
+            )}
+          </div>
+
+          <div class="topbar-actions">
+            <a class="btn btn--sm" href={href('feed.xml')} title="新增项目 RSS">
+              <Icon name="rss" size={13} /> RSS
+            </a>
+            <button
+              class="btn btn--icon"
+              type="button"
+              id="theme-toggle"
+              aria-label="切换主题"
+              aria-pressed="false"
+            >
+              <Icon name="sun-moon" size={15} />
+            </button>
+          </div>
+        </header>
+
+        <main class="main" id="main">
+          <slot />
+        </main>
       </div>
-    </footer>
+    </div>
 
     <script>
-      import '../client/theme.js';
+      import '../client/shell.js';
     </script>
   </body>
 </html>

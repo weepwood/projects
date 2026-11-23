@@ -1,87 +1,141 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import Status from '../components/Status.astro';
-import Stats from '../components/Stats.astro';
+import HealthMix from '../components/HealthMix.astro';
+import PageHead from '../components/PageHead.astro';
 import { loadSiteData, site } from '../data/site.js';
+import { href } from '../lib/paths.js';
 
 const { projects, stats, health } = loadSiteData();
-const monitored = projects.filter((project) => project.monitorHomepage);
+const monitored = projects
+  .filter((project) => project.monitorHomepage)
+  .sort((a, b) => {
+    const rank = { offline: 0, degraded: 1, unstable: 2, unknown: 3, recovered: 4, online: 5 };
+    return (rank[a.health.status] ?? 9) - (rank[b.health.status] ?? 9);
+  });
+
 const checkedAt = health.checkedAt ? new Date(health.checkedAt) : null;
 const ageHours = checkedAt ? (Date.now() - checkedAt.getTime()) / 3_600_000 : Infinity;
 const stale = ageHours > 12;
-
-const fmt = (iso) =>
-  iso ? new Date(iso).toLocaleString('zh-CN', { timeZone: 'Asia/Hong_Kong', hour12: false }) : '—';
 const freshness = Number.isFinite(ageHours)
   ? ageHours < 1
     ? '不到 1 小时前'
     : `${Math.round(ageHours)} 小时前`
   : null;
+
+const fmt = (iso) =>
+  iso
+    ? new Date(iso).toLocaleString('zh-CN', {
+        timeZone: 'Asia/Hong_Kong',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+    : '—';
 ---
 
-<Base title={site.status.title} description={site.status.description} active="status">
-  <div class="container">
-    <header class="page-head">
-      <h1>{site.status.title}</h1>
-      <p class="lede">{site.status.description} Fork 项目不发起请求、不截图、不告警。</p>
-    </header>
+<Base
+  title={site.status.title}
+  description={site.status.description}
+  active="status"
+  breadcrumb="在线状态"
+  counts={{
+    projects: projects.length,
+    monitored: stats.monitored,
+    online: stats.online,
+    attention: stats.attention,
+  }}
+>
+  <PageHead title={site.status.title} description={`${site.status.description} Fork 项目不发起请求。`} />
 
-    <Stats
-      items={[
-        { value: stats.monitored, label: '监控网页' },
-        { value: stats.online, label: '当前正常' },
-        { value: stats.attention, label: '需要关注' },
-        { value: stats.forks, label: 'Fork（不监控）' },
-      ]}
-    />
-
-    <div class={`freshness ${stale ? 'freshness--stale' : ''}`} role="status">
-      {freshness ? <span>数据更新于 {freshness}</span> : <span>还没有健康检查结果</span>}
-      {!freshness && <span>— 首次自动检查完成后会出现数据。</span>}
-      {freshness && stale && <span>— 自动检查可能停滞，超过 12 小时会在此提示。</span>}
+  {freshness ? (
+    <div class={`notice ${stale ? '' : 'notice--calm'}`} role="status">
+      <Icon name="clock" size={13} />
+      <span>
+        数据更新于 {freshness}
+        {stale ? ' — 自动检查可能停滞' : ''}
+      </span>
     </div>
+  ) : (
+    <div class="notice" role="status">
+      <Icon name="clock" size={13} />
+      <span>还没有健康检查结果，首次自动检查完成后会出现数据。</span>
+    </div>
+  )}
 
-    <div class="table-wrap">
-      <table>
-        <caption class="visually-hidden">各项目当前在线状态</caption>
-        <thead>
-          <tr>
-            <th scope="col">项目</th>
-            <th scope="col">状态</th>
-            <th scope="col" class="num">
-              HTTP
-            </th>
-            <th scope="col" class="num">
-              响应
-            </th>
-            <th scope="col">平台</th>
-            <th scope="col">检查时间</th>
-            <th scope="col">入口</th>
-          </tr>
-        </thead>
-        <tbody>
-          {monitored.map((project) => (
+  <div class="grid grid--main" style="margin-top:var(--s4)">
+    <section class="card">
+      <div class="card-head">
+        <h2>监控网页</h2>
+        <span class="card-sub">{monitored.length} 个</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">各项目当前在线状态</caption>
+          <thead>
             <tr>
-              <td>
-                <span class="project">{project.name}</span>
-                <div class="project-sub">{project.fullName}</div>
-              </td>
-              <td>
-                <Status status={project.health.status} />
-              </td>
-              <td class="num">{project.health.statusCode ?? '—'}</td>
-              <td class="num">{project.health.latency != null ? `${project.health.latency} ms` : '—'}</td>
-              <td>{project.platform}</td>
-              <td>{fmt(project.health.checkedAt)}</td>
-              <td>
-                <a href={project.homepage} target="_blank" rel="noopener noreferrer">
-                  访问 ↗
-                </a>
-              </td>
+              <th scope="col">项目</th>
+              <th scope="col">状态</th>
+              <th scope="col" class="num">
+                HTTP
+              </th>
+              <th scope="col" class="num">
+                响应
+              </th>
+              <th scope="col">检查时间</th>
+              <th scope="col">
+                <span class="visually-hidden">入口</span>
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {monitored.map((project) => (
+              <tr>
+                <td>
+                  <span class="cell-project">
+                    <b>{project.name}</b>
+                    <span>{project.platform}</span>
+                  </span>
+                </td>
+                <td>
+                  <Status status={project.health.status} />
+                </td>
+                <td class="num">{project.health.statusCode ?? '—'}</td>
+                <td class="num">{project.health.latency != null ? `${project.health.latency} ms` : '—'}</td>
+                <td class="num">{fmt(project.health.checkedAt)}</td>
+                <td class="num">
+                  <a
+                    class="btn btn--ghost btn--sm"
+                    href={project.homepage}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    访问 <Icon name="arrow-up-right" size={12} />
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="stack">
+      <HealthMix {stats} />
+      <section class="card">
+        <div class="card-head">
+          <h2>说明</h2>
+        </div>
+        <div class="card-body">
+          <p class="tile-meta">
+            连续 1 次失败记为「波动」，2 次「异常」，3
+            次「离线」；恢复后记为「已恢复」。只会对失败项目重复检测，健康站点每 6 小时检查一次。
+          </p>
+        </div>
+      </section>
+    </aside>
   </div>
 </Base>
