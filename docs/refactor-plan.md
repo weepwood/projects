@@ -344,3 +344,28 @@ form.addEventListener('input', () => {
 1. **视觉方向**：统一到现有"印刷索引"（衬线 + 朱红 + 密集列表，个性强、与你现有 hero 连贯）；还是重做成更"现代开发者工具"的深色/等宽风？
 2. **技术路线**：零依赖纯 Node 重构（推荐，沿用现有架构与部署）；还是引入 Astro/Eleventy 换取模板与内容集合能力（代价：工具链 + 约 200 个依赖）？
 3. **本轮范围**：只要方案（本文档）；还是从 Phase 0–1 开始落地；或直接做 Phase 2–3 的视觉重做？
+
+---
+
+## 十、落地记录（v3）
+
+方案确定后选择了：**克制的浅色视觉** + **Astro 5** + **一次做完 Phase 0–4**。实际发生的变化：
+
+| 原状 | 现状 |
+|------|------|
+| 双 CSS（内联 3.3 KB GitHub 风 + `studio.css`），12 个类名冲突 | `src/styles/{tokens,base,layout,components}.css` → 单个 `site.<hash>.css`（gzip 4.2 KB），零内联样式 |
+| 953 行死代码 `gen.js`，5 个测试保护它 | 已删除；33 个测试覆盖上线代码的领域规则 |
+| 6 个脚本，5 个是单行压缩程序（最长行 3,343 字符） | `src/lib`（纯函数）+ `src/cli`（薄入口）+ `src/pages`/`components`（渲染），Prettier 强制执行 |
+| 目录页 48 KB 内联 JSON，无 JS 时空白 | 服务端渲染的密集行列表，筛选只切换 DOM；无 JS 时 64 条项目仍完整可读 |
+| 分类 68% 落「其他项目」，置信度是常数 | 打分式分类（名称/topics 权重更高，依赖参与打分），置信度由领先幅度计算；人工覆盖优先 |
+| 派生产物入库（5 个 HTML + `projects_data.json`），health 全是 unknown | `dist/`、`.cache/` 全部忽略；仓库里只有源码与内容 |
+| 无 favicon/OG/sitemap/robots/404/RSS | 全部补齐，并正确处理 Pages 的 `/projects/` 子路径 |
+| 无 lockfile，缓存 key 用 `run_id`，CI 不覆盖业务代码 | `package-lock.json` + `npm ci`，内容派生缓存 key，质量工作流覆盖 `src/**` |
+| 无 lint/format/体积约束 | ESLint + Prettier + gzip 体积预算（首页 12 KB、目录 20 KB、CSS 15 KB） |
+
+有意为之的取舍：
+
+- **Astro 固定在 5.x**：Astro 7 要求 Node ≥ 22.23.4，而 CI 与本地都在 Node 20/22 早期版本上；5.x 支持 Node 18+，升级留到基础镜像跟进之后。
+- **深色模式改为手动切换**：不再跟随系统，避免同一页面因访问者系统设置而呈现两种外观，截图与评审更可控。
+- **截图仍放在 Actions Cache**（`public/covers/` 已 gitignore）：如需在 PR 中审查封面变化，删除 `.gitignore` 中对应一行即可，无需改代码。
+- **`governance/projects.yml` 未删除**：分级数据迁到 `content/registry.json` 供构建读取，YAML 保留为叙述与复核记录。
